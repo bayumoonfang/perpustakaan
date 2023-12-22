@@ -1,0 +1,16 @@
+variables:
+  GIT_STRATEGY: none
+  
+stages:
+  - deploy
+  - build
+
+deploy:
+  tags:
+    - bukakalabs-contabo
+  only:
+    - main
+  stage: deploy
+  script:
+    - cd /var/www/baktimulya-project/library
+    - git pull origin main
