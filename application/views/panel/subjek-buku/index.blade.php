@@ -2,7 +2,7 @@
 @section('title', $title)
 @php
     $no = 1;
-    $edit = isset($bentuk_buku) ? true : false;
+    $edit = isset($subjek_buku) ? true : false;
 @endphp
 @section('styles')
     <link href="{{ base_url('assets/libs/jquery-confirm/dist/jquery-confirm.min.css') }}" rel="stylesheet">
@@ -32,31 +32,28 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-body">
-                            @if (user_can('add bentuk buku'))
-                                <div class="col-12 text-right mb-4">
-                                    {{-- <a href="{{ admin_url('bentuk-buku/new') }}" class="btn btn-success ml-2">Tambah
+                            {{-- @if (user_can('add subjek buku')) --}}
+                            <div class="col-12 text-right mb-4">
+                                {{-- <a href="{{ admin_url('subjek-buku/new') }}" class="btn btn-success ml-2">Tambah
                                         Data</a> --}}
-                                    <button type="button" class="btn btn-success ml-2" data-toggle="modal"
-                                        id="btnModalBentuk" data-target="#bentukBukuModal"><i
-                                            class="fas fa-plus mr-2"></i>Tambah</button>
-                                </div>
-                            @endif
-                            {{ show_status() }}
+                                <button type="button" class="btn btn-success ml-2" data-toggle="modal" id="btnModalSubject"
+                                    data-target="#subjekBukuModal"><i class="fas fa-plus mr-2"></i>Tambah</button>
+                            </div>
+                            {{-- @endif --}}
                             <div class="table-responsive">
-                                <table id="tableBentukBuku"
-                                    class="table table-striped table-hover table-bordered dt-responsive nowrap table-bentuk"
+                                <table id="tableSubjekBuku" class="table table-hover dt-responsive"
                                     style="border-collapse: collapse; border-spacing: 0; width: 100%;">
                                     <thead>
                                         <tr>
                                             <th width="5%">No</th>
-                                            <th>Kategori Buku</th>
-                                            <th width="20%">Status</th>
-                                            {{-- @if (user_can(['edit bentuk buku', 'delete bentuk buku'])) --}}
-                                            <th width="200px">Action</th>
-                                            {{-- @endif --}}
+                                            <th>Kode Klasifikasi</th>
+                                            <th>Subjek</th>
+                                            <th>Status</th>
+                                            <th width="11%" class="text-center">
+                                                Action
+                                            </th>
                                         </tr>
                                     </thead>
-
                                 </table>
                             </div>
                         </div>
@@ -65,24 +62,41 @@
             </div> <!-- end row -->
 
             {{-- modal --}}
-            <div class="modal fade " id='bentukBukuModal' tabindex="-1" aria-labelledby="bentukModalLabel"
+            <div class="modal fade " id='subjekBukuModal' tabindex="-1" aria-labelledby=#subjectModalLabel"
                 style="display: none;" aria-hidden="true">
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title mt-0" id="bentukModalLabel">Tambah Bentuk</h5>
+                            <h5 class="modal-title mt-0" id=#subjectModalLabel">Tambah Subjek Buku</h5>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">×</span>
                             </button>
                         </div>
                         <div class="modal-body">
-                            <form method="POST" id="bentukBukuForm">
-                                <input type="hidden" name="bentuk_id" id="bentuk_id">
-                                <input type="hidden" name="bentuk_method" id="bentuk_method">
-                                <div class="form-group row">
-                                    <label for="name" class="col-md-3 col-form-label">Bentuk</label>
-                                    <div class="col-md-9">
-                                        <input class="form-control" type="text" placeholder="Bentuk" id="name">
+                            <form method="POST" id="subjekBukuForm">
+                                <div class="row">
+                                    <input type="hidden" name="subject_id" id="subject_id">
+                                    <input type="hidden" name="subject_method" id="subject_method">
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label>Subjek Buku <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" placeholder="" id="name">
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="form-group">
+                                            <label>Kode Awal <span class="font-italic font-size-12">(Kode
+                                                    Klasifikasi)</span> <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" placeholder="Nilai Min."
+                                                id="min_value">
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="form-group">
+                                            <label>Kode Akhir <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" placeholder="Nilai Max."
+                                                id="max_value">
+                                        </div>
                                     </div>
                                 </div>
                             </form>
@@ -101,13 +115,12 @@
 @endsection
 
 @section('scripts')
-
-    <script src="{{ base_url('assets/libs/jquery-confirm/dist/jquery-confirm.min.js') }}"></script>
     <script>
         $(document).ready(function() {
-            var table = $('#tableBentukBuku').DataTable({
+            var table, dtable;
+            var table = $('#tableSubjekBuku').DataTable({
                 ajax: {
-                    url: "{{ admin_url('daftar-bentuk') }}",
+                    url: "{{ admin_url('daftar-subjek') }}",
                     type: "POST"
                 },
                 responsive: true,
@@ -154,17 +167,17 @@
                 ],
             });
 
-            $('body').on('click', '#btnModalBentuk', function() {
-                $('#bentukBukuForm')[0].reset();
-                $('#bentukModalLabel').html('Tambah Bentuk Buku');
-                $('#bentuk_method').val('saveBentuk');
+            $('body').on('click', '#btnModalSubject', function() {
+                $('#subjekBukuForm')[0].reset();
+                $('#subjectModalLabel').html('Tambah Subjek Buku');
+                $('#subject_method').val('saveSubject');
             });
 
             $('tbody').on('click', '.button-edit', function() {
                 var id = $(this).data("id");
                 $.ajax({
                     type: "POST",
-                    url: "{{ admin_url('bentuk-buku/edit') }}",
+                    url: "{{ admin_url('subjek-buku/edit') }}",
                     data: {
                         id: id,
                     },
@@ -172,12 +185,14 @@
                     dataType: "json",
                     success: function(res) {
                         if (res.success == true) {
-                            $('#bentukModalLabel').html('Edit Bentuk Buku');
-                            $('#bentuk_method').val('updateBentuk');
+                            $('#subjectModalLabel').html('Edit Subjek Buku');
+                            $('#subject_method').val('updateSubject');
                             $('#name').val(res.data.name);
-                            $('#bentuk_id').val(res.data.id);
+                            $('#subject_id').val(res.data.id);
+                            $('#min_value').val(res.data.min_value);
+                            $('#max_value').val(res.data.max_value);
                             $('.button-submit').html('Update');
-                            $('#bentukBukuModal').modal("toggle");
+                            $('#subjekBukuModal').modal("toggle");
                         }
                     },
                     error: function(res) {
@@ -186,70 +201,62 @@
                 })
             });
 
-            $('tbody').on('click', '.button-delete', function(e) {
-                var $this = $(this);
-                var data_id = $this.data('id');
-                $.confirm({
-                    animation: 'top',
-                    title: 'Hapus',
-                    content: 'Yakin ingin hapus data ini ?',
-                    type: 'red',
-                    typeAnimated: true,
-                    buttons: {
-                        'Tidak': {
-                            btnClass: 'btn-info text-white', // multiple classes.
-                            action: function() {}
-                        },
-                        'Ya': {
-                            btnClass: 'btn-danger',
-                            action: function() {
-                                window.location.href = "{{ admin_url('bentuk-buku') }}/" +
-                                    data_id +
-                                    '/delete';
+            $('tbody').on('click', '.button-delete', function() {
+                var id = $(this).data("id");
+                var name = $(this).data("name");
+                Swal.fire({
+                    title: "Hapus subjek " + name + "?",
+                    text: "Data yang dihapus tidak dapat dikembalikan",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    cancelButtonText: "Batal",
+                    confirmButtonText: "Ya!"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        var url = "{{ admin_url('subjek-buku/:id/delete') }}";
+                        $.ajax({
+                            type: "POST",
+                            url: url.replace(":id", id),
+                            dataType: "json",
+                            success: function(res) {
+                                if (res.success == true) {
+                                    Swal.fire({
+                                        icon: res.icon,
+                                        title: 'Proses ' + res.status + '!',
+                                        text: res.message,
+                                        timer: 1000
+                                    });
+                                    table.ajax.reload(null, false);
+                                }
+                            },
+                            error: function(res) {
+                                console.log('Error', res);
                             }
-                        },
-                    },
 
+                        })
+                    } else if (result.isDismissed) {
+                        Swal.fire("Subjek " + name + " batal dihapus", "", "info");
+                    }
                 });
             });
 
             $('.button-submit').click(function(e) {
                 e.preventDefault();
-                var bentukId = $('#bentuk_id').val();
+                var subjectId = $('#subject_id').val();
                 var name = $('#name').val();
-                var method = $('#bentuk_method').val();
-                if (method == "saveBentuk") {
+                var min_value = $('#min_value').val();
+                var max_value = $('#max_value').val();
+                var method = $('#subject_method').val();
+                if (method == 'saveSubject') {
                     $.ajax({
                         type: "POST",
-                        url: "{{ admin_url('bentuk-buku/add') }}",
-                        data: {
-                            name: name
-                        },
-                        dataType: "json",
-                        success: function(res) {
-                            res.status == 'Berhasil' ? $('.table-bentuk tbody').empty() : '';
-                            console.log(res);
-                            Swal.fire({
-                                icon: res.icon,
-                                title: 'Proses ' + res.status + '!',
-                                text: res.message,
-                                timer: 1000
-                            });
-                            $('#bentukBukuForm')[0].reset();
-                            // window.location.href = "{{ admin_url('bentuk-buku') }}";
-                            $('#bentukBukuModal').modal("toggle");
-                            // alert('Success');
-                            // location.reload();
-                            table.ajax.reload(null, false);
-                        }
-                    })
-                } else {
-                    var url = "{{ admin_url('bentuk-buku/:id/update') }}";
-                    $.ajax({
-                        type: "POST",
-                        url: url.replace(":id", bentukId),
+                        url: "{{ admin_url('subjek-buku/add') }}",
                         data: {
                             name: name,
+                            min_value: min_value,
+                            max_value: max_value,
                         },
 
                         dataType: "json",
@@ -261,9 +268,37 @@
                                 text: res.message,
                                 timer: 1000
                             });
-                            $('#bentukBukuForm')[0].reset();
-                            // window.location.href = "{{ admin_url('bentuk-buku') }}";
-                            $('#bentukBukuModal').modal("toggle");
+                            $('#subjekBukuForm')[0].reset();
+                            // window.location.href = "{{ admin_url('subjek-buku') }}";
+                            $('#subjekBukuModal').modal("toggle");
+                            // alert('Success');
+                            table.ajax.reload(null, false);
+                        }
+                    })
+                } else {
+                    var url = "{{ admin_url('subjek-buku/:id/update') }}";
+                    $.ajax({
+                        type: "POST",
+                        url: url.replace(":id", subjectId),
+                        data: {
+                            // id: subjectId,
+                            name: name,
+                            min_value: min_value,
+                            max_value: max_value,
+                        },
+
+                        dataType: "json",
+                        success: function(res) {
+                            console.log(res);
+                            Swal.fire({
+                                icon: res.icon,
+                                title: 'Proses ' + res.status + '!',
+                                text: res.message,
+                                timer: 1000
+                            });
+                            $('#subjekBukuForm')[0].reset();
+                            // window.location.href = "{{ admin_url('subjek-buku') }}";
+                            $('#subjekBukuModal').modal("toggle");
                             // alert('Success');
                             table.ajax.reload(null, false);
                         },
@@ -273,6 +308,8 @@
                     })
                 }
             });
+
+
         });
     </script>
 @endsection

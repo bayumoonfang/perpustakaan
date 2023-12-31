@@ -101,6 +101,7 @@ $route[$admin . '/buku-barcode-generate']['POST'] = 'panel/book/book_barcode_gen
 $route[$admin . '/buku-barcode-print'] = 'panel/book/book_barcode_print';
 $route[$admin . '/buku-barcode-detail/(:num)/library/(:num)'] = 'panel/book/book_barcode_list/$1/$2';
 $route[$admin . '/buku-barcode/(:num)/library/(:num)'] = 'panel/book/book_barcode/$1/$2';
+$route[$admin . '/buku/export_excel'] = 'panel/book/export_excel_buku';
 
 //route kategori-buku
 $route[$admin . '/kategori-buku'] = 'panel/book/index_kategori';
@@ -114,19 +115,31 @@ $route[$admin . '/kategori-buku/ajax/data/(:num)'] = 'panel/book/ajax_data/$1';
 $route[$admin . '/kelas/ajax/data/(:num)'] = 'panel/library/kelas_ajax_data/$1';
 $route[$admin . '/mapel/ajax/data/(:num)'] = 'panel/library/mapel_ajax_data/$1';
 $route[$admin . '/member/ajax/data/(:any)'] = 'panel/library/member_ajax_data/$1';
+// $route[$admin . '/member/ajax/data'] = 'panel/library/member_ajax_data';
 $route[$admin . '/issue/ajax/add_duration/(:num)/(:any)'] = 'panel/issue/update_duration/$1/$2';
 $route[$admin . '/book/ajax/data/(:any)'] = 'panel/library/book_ajax_data/$1';
 $route[$admin . '/kategori-buku-masuk/ajax/data/(:any)'] = 'panel/library/category_buku_masuk_ajax_data/$1';
 $route[$admin . '/kategori-buku-keluar/ajax/data/(:any)'] = 'panel/library/category_buku_keluar_ajax_data/$1';
 
 //route bentuk-buku
+$route[$admin . '/daftar-bentuk']['POST'] = 'panel/book/daftar_bentuk';
 $route[$admin . '/bentuk-buku'] = 'panel/book/index_bentuk';
 $route[$admin . '/bentuk-buku/(:num)'] = 'panel/book/index_bentuk';
 $route[$admin . '/bentuk-buku/new'] = 'panel/book/new_bentuk';
 $route[$admin . '/bentuk-buku/add']['POST'] = 'panel/book/add_bentuk';
+$route[$admin . '/bentuk-buku/edit'] = 'panel/book/get_bentuk_by_id';
 $route[$admin . '/bentuk-buku/(:num)/edit'] = 'panel/book/edit_bentuk/$1';
 $route[$admin . '/bentuk-buku/(:num)/update']['POST'] = 'panel/book/update_bentuk/$1';
 $route[$admin . '/bentuk-buku/(:num)/delete'] = 'panel/book/delete_bentuk/$1';
+
+//route klasifikasi-buku
+$route[$admin . '/daftar-subjek']['POST'] = 'panel/book/daftar_subjek';
+$route[$admin . '/subjek-buku'] = 'panel/book/index_subjek';
+$route[$admin . '/subjek-buku/(:num)'] = 'panel/book/index_subjek';
+$route[$admin . '/subjek-buku/add']['POST'] = 'panel/book/add_subjek';
+$route[$admin . '/subjek-buku/edit'] = 'panel/book/get_subjek_by_id';
+$route[$admin . '/subjek-buku/(:num)/update']['POST'] = 'panel/book/update_subjek/$1';
+$route[$admin . '/subjek-buku/(:num)/delete'] = 'panel/book/delete_subjek/$1';
 
 //route master jenis pengurangan
 $route[$admin . '/pengurangan'] = 'panel/pengurangan/index';
@@ -200,6 +213,9 @@ $route[$admin . '/laporan/history-buku/detail/(:num)/(:num)'] = 'laporan/History
 $route[$admin . '/laporan/kategori-buku'] = 'laporan/KategoriBuku/index';
 $route[$admin . '/laporan/kategori-buku/(:num)'] = 'laporan/KategoriBuku/index';
 $route[$admin . '/laporan/kategori-buku/cetak'] = 'laporan/KategoriBuku/export_kategori_buku';
+$route[$admin . '/laporan/subjek-buku'] = 'laporan/SubjekBuku/index';
+$route[$admin . '/laporan/subjek-buku/(:num)'] = 'laporan/SubjekBuku/index';
+$route[$admin . '/laporan/subjek-buku/cetak'] = 'laporan/SubjekBuku/export_subjek_buku';
 $route[$admin . '/laporan/transaksi-buku'] = 'laporan/TransaksiKeluarMasuk/index';
 $route[$admin . '/laporan/transaksi-buku/(:num)'] = 'laporan/TransaksiKeluarMasuk/index';
 $route[$admin . '/laporan/transaksi-buku/cetak'] = 'laporan/TransaksiKeluarMasuk/export_transaksi';

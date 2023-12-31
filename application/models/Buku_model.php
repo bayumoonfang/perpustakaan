@@ -1115,4 +1115,62 @@ class Buku_model extends App_Model
 		$total = $this->db->get(db_prefix() . 'issues')->num_rows();
 		return !empty($total) ? $total : 0;
 	}
+
+	//Ekspor impor buku
+	public function export_excel_master_buku()
+	{
+		if (!is_admin()) {
+			$user_library = $this->user_library();
+			if (!empty($user_library)) {
+				$this->db->where_in($this->column('library'), $user_library);
+			} else {
+				return array();
+			}
+		}
+		$get_select_bentuk = $this->input->get('select_bentuk', true);
+		if (!empty($get_select_bentuk)) {
+			$where = array();
+			foreach ($get_select_bentuk as $line) {
+				array_push($where, $line);
+			}
+			$this->db->where_in('bentuk', $where);
+		}
+		$get_select_kategori = $this->input->get('select_kategori', true);
+		if (!empty($get_select_kategori)) {
+			$where = array();
+			foreach ($get_select_kategori as $line) {
+				array_push($where, $line);
+			}
+			$this->db->where_in('category', $where);
+		}
+		if (!empty($search)) {
+			$this->db->group_start();
+			$this->db->like($this->column('category'), $search);
+			$this->db->group_end();
+		}
+		$this->db->where($this->column('deleted_at'), null);
+		$this->db->order_by($this->column('id'), 'desc');
+		$data = $this->db->get($this->table)->result();
+		// foreach ($data as $key => $item) {
+		// 	$library_name = '-';
+		// 	$library_name = '-';
+		// 	$this->db->where($this->column('id'), $item->library);
+		// 	$libData = $this->db->get(db_prefix() . 'libraries')->row();
+		// 	if (!empty($libData)) {
+		// 		$library_name = ucfirst($libData->library);
+		// 	};
+		// 	$data[$key]->library_name = $library_name;
+		// 	$book_issued = $this->jumlah_pinjam($item->id);
+		// 	$book_viewed = $this->view_by_book($item->id);
+		// 	$data[$key]->pinjam = $book_issued;
+		// 	$data[$key]->baca = $book_viewed;
+		// }
+		return $data;
+	}
+
+	public function header_excel_buku()
+	{
+		$get = $this->db->get($this->table)->result_array();
+		return $get;
+	}
 }

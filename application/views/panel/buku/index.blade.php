@@ -4,6 +4,7 @@
     $no = 1;
 @endphp
 @section('styles')
+
     <link href="{{ base_url('assets/libs/jquery-confirm/dist/jquery-confirm.min.css') }}" rel="stylesheet">
 @endsection
 @section('content')
@@ -183,11 +184,117 @@
             </div> <!-- end row -->
         </div> <!-- container-fluid -->
     </div>
+
+    <div class="modal fade import-data" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Import Buku</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form action="">
+                        <div class="form-group">
+                            <label>Uploud file</label>
+                            <input type="file" class="form-control">
+                        </div>
+                    </form>
+                    <p>Download Template importnya <a href="#" target="_blank">disini</a>.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light waves-effect" data-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary waves-effect waves-light" data-dismiss="modal"><i
+                            class="uil uil-save mr-2"></i>Import</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+    <div class="modal fade export-data" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Setting Export Buku</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ admin_url('buku/export_excel') }}" type="POST" target="_blank">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label>Tanggal Awal</label>
+                                    <input class="form-control" name="export_date_start" type="date">
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label>Tanggal Akhir</label>
+                                    <input class="form-control" name="export_date_end" type="date">
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="form-group">
+                            <label for="validationTooltip01">Bentuk</label>
+                            <select class="select2 form-control select2-multiple bg-light" name="select_bentuk[]"
+                                style="width: 100%" multiple="multiple">
+                                @foreach ($bentuk_buku as $item)
+                                    <option value="{{ $item->name }}">{{ $item->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="validationTooltip01">Kategori Buku</label>
+                            <select class="select2 form-control select2-multiple bg-light" name="select_kategori[]"
+                                style="width: 100%" multiple="multiple">
+                                @foreach ($kategori_buku as $item)
+                                    <option value="{{ $item->id }}">{{ $item->category }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="validationTooltip01">Subjek Buku</label>
+                            <select class="select2 form-control select2-multiple bg-light" name="select_subjek[]"
+                                style="width: 100%" multiple="multiple">
+                                @foreach ($subjek_buku as $item)
+                                    <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="validationTooltip01">Status</label>
+                            <select class="select2 form-control select2-multiple bg-light" name="select_aktif[]"
+                                style="width: 100%" multiple="multiple">
+                                <option value="">-</option>
+                                <option value="">Aktif</option>
+                                <option value="">Tidak Aktif</option>
+                            </select>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-warning waves-effect waves-light"><i
+                                    class="uil uil-download-alt mr-2"></i>Export</button>
+                        </div>
+                    </form>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
     <!-- End Page-content -->
 @endsection
 @section('scripts')
+    <!-- plugins -->
+    <script src="{{ base_url('assets/libs/select2/js/select2.min.js') }}"></script>
     <script src="{{ base_url('assets/libs/jquery-confirm/dist/jquery-confirm.min.js') }}"></script>
     <script>
+        $(document).ready(function() {
+            $('.select2-multiple').select2();
+        });
         $('.button-delete').on('click', function(e) {
             var $this = $(this);
             var data_id = $this.data('id');

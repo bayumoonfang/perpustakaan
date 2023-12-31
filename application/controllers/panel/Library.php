@@ -26,7 +26,8 @@ class Library extends Admin_Controller
 		return view('panel.perpustakaan.index', $data);
 	}
 
-	public function new(){
+	public function new()
+	{
 		user_access('add perpustakaan');
 		$this->load->model('sekolah_model', 'sekolah');
 		$data['schools'] = $this->sekolah->data(1000);
@@ -34,7 +35,8 @@ class Library extends Admin_Controller
 		return view('panel.perpustakaan.form', $data);
 	}
 
-	public function store(){
+	public function store()
+	{
 		user_access('add perpustakaan');
 		form_validate([
 			'library' => 'required',
@@ -42,7 +44,7 @@ class Library extends Admin_Controller
 		]);
 		$input = $this->input->post(NULL, TRUE);
 		$library_name = strtolower(trim($input['library']));
-		$exists_library = $this->library->exists_library($input['school'],$library_name);
+		$exists_library = $this->library->exists_library($input['school'], $library_name);
 		if ($exists_library) {
 			set_alert('Nama perpustakaan telah terpakai', 'danger');
 			back();
@@ -55,8 +57,8 @@ class Library extends Admin_Controller
 	public function edit($id)
 	{
 		user_access('edit perpustakaan');
-		$library=$this->library->get_data($id);
-		if(!$library){
+		$library = $this->library->get_data($id);
+		if (!$library) {
 			show_404();
 		}
 		$this->load->model('sekolah_model', 'sekolah');
@@ -65,7 +67,7 @@ class Library extends Admin_Controller
 		$data['title'] = 'Edit Perpustakaan';
 		return view('panel.perpustakaan.form', $data);
 	}
-	
+
 	public function update($id)
 	{
 		user_access('edit perpustakaan');
@@ -73,14 +75,14 @@ class Library extends Admin_Controller
 			'library' => 'required',
 			'school' => 'required',
 		]);
-		$library=$this->library->get_data($id);
-		if(!$library){
+		$library = $this->library->get_data($id);
+		if (!$library) {
 			show_404();
 		}
-		
+
 		$input = $this->input->post(NULL, TRUE);
 		$library_name = strtolower(trim($input['library']));
-		$exists_library = $this->library->exists_library($input['school'], $library_name,$id);
+		$exists_library = $this->library->exists_library($input['school'], $library_name, $id);
 		if ($exists_library) {
 			set_alert('Nama perpustakaan telah terpakai', 'danger');
 			back();
@@ -93,8 +95,8 @@ class Library extends Admin_Controller
 	public function delete($id)
 	{
 		user_access('delete perpustakaan');
-		$library=$this->library->get_data($id);
-		if(!$library){
+		$library = $this->library->get_data($id);
+		if (!$library) {
 			show_404();
 		}
 		$library = $this->library->delete($id);
@@ -102,37 +104,43 @@ class Library extends Admin_Controller
 		redirect(admin_url('perpustakaan'));
 	}
 
-	public function kelas_ajax_data($id){
+	public function kelas_ajax_data($id)
+	{
 		$this->load->model('Kelas_model', 'kelas');
 		$data = $this->kelas->data_per_library($id);
 		echo json_encode($data);
 	}
-	public function mapel_ajax_data($id){
+	public function mapel_ajax_data($id)
+	{
 		$this->load->model('Mapel_model', 'mapel');
 		$data = $this->mapel->data_per_library($id);
 		echo json_encode($data);
 	}
-	public function member_ajax_data($member){
-		$search=str_replace('%20',' ',$member);
+	public function member_ajax_data($member)
+	{
+		$search = str_replace('%20', ' ', $member);
 		$this->load->model('user_model', 'user');
-		$data=$this->user->get_member($search);
+		$data = $this->user->get_member($search);
 		echo json_encode($data);
 	}
-	public function book_ajax_data($id){
+	public function book_ajax_data($id)
+	{
 		$this->load->model('buku_model', 'buku');
-		$data=$this->buku->data_per_library($id);
+		$data = $this->buku->data_per_library($id);
 		echo json_encode($data);
 	}
 
-	public function category_buku_masuk_ajax_data($id){
+	public function category_buku_masuk_ajax_data($id)
+	{
 		$this->load->model('penambahan_model', 'penambahan');
-		$data=$this->penambahan->data_per_library($id);
+		$data = $this->penambahan->data_per_library($id);
 		echo json_encode($data);
 	}
 
-	public function category_buku_keluar_ajax_data($id){
+	public function category_buku_keluar_ajax_data($id)
+	{
 		$this->load->model('pengurangan_model', 'pengurangan');
-		$data=$this->pengurangan->data_per_library($id);
+		$data = $this->pengurangan->data_per_library($id);
 		echo json_encode($data);
 	}
 }

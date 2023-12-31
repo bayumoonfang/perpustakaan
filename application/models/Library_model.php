@@ -29,7 +29,7 @@ class Library_model extends App_Model
 		return $total;
 	}
 
-	public function data($number=10, $offset=0, $search = null, $role = null, $sekolah = null)
+	public function data($number = 10, $offset = 0, $search = null, $role = null, $sekolah = null)
 	{
 		if (!is_admin()) {
 			$sekolah_id = current_user('user_sekolahid');
@@ -45,41 +45,44 @@ class Library_model extends App_Model
 		$this->db->order_by($this->column('id'), 'desc');
 		$data = $this->db->get($this->table, $number, $offset)->result();
 		foreach ($data as $key => $item) {
-			$school_name='-';
-			$detail_school= $this->get_school($item->school);
-			if($detail_school){
-				$school_name=strtoupper($detail_school->sekolah_nama);
+			$school_name = '-';
+			$detail_school = $this->get_school($item->school);
+			if ($detail_school) {
+				$school_name = strtoupper($detail_school->sekolah_nama);
 			}
-			$data[$key]->school_name= $school_name;
+			$data[$key]->school_name = $school_name;
 		}
 		return $data;
 	}
 
-	public function get_school($sekolah_id){
+	public function get_school($sekolah_id)
+	{
 		$this->db_master = $this->load->database('master', true);
 		$this->db_master->where('sekolah_id', $sekolah_id);
 		$data = $this->db_master->get(db_master_prefix() . 'master_sekolah')->row();
-		if(!$data){
+		if (!$data) {
 			return false;
 		}
 		return $data;
 	}
 
-	public function exists_library($school,$library,$id=null){
+	public function exists_library($school, $library, $id = null)
+	{
 		$this->db->where($this->column('school'), $school);
 		$this->db->where($this->column('library'), $library);
 		$this->db->where($this->column('deleted_at'), null);
-		if(!empty($id)){
-			$this->db->where($this->column('id').' !=', $id);
+		if (!empty($id)) {
+			$this->db->where($this->column('id') . ' !=', $id);
 		}
-		$exists=$this->db->get($this->table)->row();
-		if(empty($exists)){
+		$exists = $this->db->get($this->table)->row();
+		if (empty($exists)) {
 			return false;
 		}
 		return $exists;
 	}
 
-	public function add(){
+	public function add()
+	{
 		$input = $this->input->post(NULL, TRUE);
 		$data = [
 			'school' => $input['school'],
@@ -89,14 +92,15 @@ class Library_model extends App_Model
 			'updated_at' => now(),
 			'updated_by' => current_user(),
 		];
-		if(isset($input['location'])){
+		if (isset($input['location'])) {
 			$data['location'] = $input['location'];
 		}
 		$this->db->insert($this->table, $data);
 		return $this->db->insert_id();
 	}
-	
-	public function get_data($value,$column='id'){
+
+	public function get_data($value, $column = 'id')
+	{
 		$this->db->where($column, $value);
 		if (!is_admin()) {
 			$user_library = $this->user_library();
@@ -108,14 +112,15 @@ class Library_model extends App_Model
 			$this->db->where_in($this->column('id'), $user_library);
 		}
 		$this->db->where($this->column('deleted_at'), null);
-		$data=$this->db->get($this->table)->row();
-		if(empty($data)){
+		$data = $this->db->get($this->table)->row();
+		if (empty($data)) {
 			return false;
 		}
 		return $data;
 	}
 
-	public function update($id){
+	public function update($id)
+	{
 		$input = $this->input->post(NULL, TRUE);
 		$data = [
 			'school' => $input['school'],
@@ -123,7 +128,7 @@ class Library_model extends App_Model
 			'updated_at' => now(),
 			'updated_by' => current_user(),
 		];
-		if(isset($input['location'])){
+		if (isset($input['location'])) {
 			$data['location'] = $input['location'];
 		}
 		$this->db->where('id', $id);
@@ -131,7 +136,8 @@ class Library_model extends App_Model
 		return true;
 	}
 
-	public function delete($id){
+	public function delete($id)
+	{
 		$data = [
 			'updated_at' => now(),
 			'deleted_at' => now(),
@@ -142,12 +148,17 @@ class Library_model extends App_Model
 		return true;
 	}
 
-	public function current_user_library(){
+	public function current_user_library()
+	{
 		$sekolah_id = current_user('user_sekolahid');
 		$this->db->where($this->column('school'), $sekolah_id);
 		$this->db->where($this->column('deleted_at'), null);
 		$this->db->order_by($this->column('library'), 'asc');
-		$data = $this->db->get($this->table)->result();
+		if (!is_admin()) {
+			$data = $this->db->get($this->table)->result();
+		} else {
+			$data = array("0" => (object)['id' => ' ']);
+		}
 		return $data;
 	}
 

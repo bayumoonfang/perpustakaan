@@ -15,7 +15,8 @@
 		"vlucas/phpdotenv": "^5.4",
 		"jenssegers/blade": "^1.4",
 		"chriskacerguis/codeigniter-restserver": "^3.1",
-		"phpoffice/phpspreadsheet": "^1.28"
+		"phpoffice/phpspreadsheet": "^1.28",
+		"maennchen/zipstream-php": "2.1"
 	},
 	"suggest": {
 		"paragonie/random_compat": "Provides better randomness in PHP 5.x"

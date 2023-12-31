@@ -92,6 +92,7 @@
                             <li><a href="{{ admin_url('laporan/peminjaman') }}">Peminjaman</a></li>
                             <li><a href="{{ admin_url('laporan/history-buku') }}">History Buku</a></li>
                             <li><a href="{{ admin_url('laporan/kategori-buku') }}">Kategori Buku</a></li>
+                            <li><a href="{{ admin_url('laporan/subjek-buku') }}">Subjek Buku</a></li>
                             <li><a href="{{ admin_url('laporan/transaksi-buku') }}">Transaksi Keluar Masuk</a></li>
                             <li><a href="{{ admin_url('laporan/pengunjung') }}">Pengunjung</a></li>
                         </ul>
@@ -142,11 +143,12 @@
                                 <li><a href="{{ admin_url('perpustakaan') }}">Perpustakaan</a></li>
                             @endif
                             @if (user_can(['edit bentuk buku', 'add bentuk buku', 'delete bentuk buku', 'view bentuk buku']))
-                                <li><a href="{{ admin_url('bentuk-buku') }}">Bentuk Pustaka</a></li>
                             @endif
+                            <li><a href="{{ admin_url('bentuk-buku') }}">Bentuk Pustaka</a></li>
                             @if (user_can(['edit kategori buku', 'add kategori buku', 'delete kategori buku', 'view kategori buku']))
                                 <li><a href="{{ admin_url('kategori-buku') }}">Kategori Buku</a></li>
                             @endif
+                            <li><a href="{{ admin_url('subjek-buku') }}">Subjek Buku</a></li>
                             @if (user_can(['edit buku', 'add buku', 'delete buku', 'view buku']))
                                 <li><a href="{{ admin_url('buku') }}">Buku</a></li>
                             @endif

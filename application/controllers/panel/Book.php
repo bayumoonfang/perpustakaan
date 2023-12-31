@@ -1,5 +1,8 @@
 <?php (defined('BASEPATH')) or exit('No direct script access allowed');
 
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
 class Book extends Admin_Controller
 {
 	public function __construct()
@@ -12,6 +15,7 @@ class Book extends Admin_Controller
 		$this->load->model('Bahasa_model', 'bahasa');
 		$this->load->model('Mapel_model', 'mapel');
 		$this->load->model('Bentuk_model', 'bentuk_buku');
+		$this->load->model('Subjek_model', 'subjek_buku');
 	}
 
 	public function index()
@@ -32,6 +36,9 @@ class Book extends Admin_Controller
 		$data['library'] = $libs;
 		$data['title'] = 'Buku';
 		$data['selected_lib'] = $lib_get;
+		$data['kategori_buku'] = $this->kategori_buku->data();
+		$data['subjek_buku'] = $this->subjek_buku->data();
+		$data['bentuk_buku'] = $this->bentuk_buku->data();
 		return view('panel.buku.index', $data);
 	}
 
@@ -42,6 +49,7 @@ class Book extends Admin_Controller
 		$data['bahasa'] = $this->bahasa->data();
 		$data['rak'] = array();
 		$data['kategori_buku'] = array();
+		$data['subjek_buku'] = $this->subjek_buku->data();
 		$data['mapel'] = array();
 		$data['title'] = 'Tambah Buku';
 		return view('panel.buku.form', $data);
@@ -158,6 +166,7 @@ class Book extends Admin_Controller
 		$data['mapel'] = $this->mapel->data_per_library($buku->library);
 		$data['rak'] = $this->rak->data($buku->library, 10000);
 		$data['kategori_buku'] = $this->kategori_buku->data_per_library($buku->library);
+		$data['subjek_buku'] = $this->subjek_buku->data();
 		$data['title'] = 'Update Buku';
 		return view('panel.buku.form', $data);
 	}
@@ -546,19 +555,75 @@ class Book extends Admin_Controller
 	//Controller Bentuk Pustaka
 	public function index_bentuk()
 	{
-		user_access(['edit bentuk buku', 'add bentuk buku', 'delete bentuk buku', 'view bentuk buku']);
-		$search = $this->input->get('s', true);
-		$config = pagination();
-		$config['base_url'] = admin_url('bentuk-buku');
-		$total = $this->bentuk_buku->total_data($search);
-		$config['total_rows'] = $total;
-		$from = ($this->uri->segment(3)) ? $this->uri->segment(3) : 0;
-		$this->pagination->initialize($config);
-		$data['bentuk_buku'] = $this->bentuk_buku->data($config['per_page'], $from, $search);
-		$data['page'] = $this->pagination->create_links();
-		$this->session->set_flashdata('input_data', ['s' => $search]);
+		// user_access(['edit bentuk buku', 'add bentuk buku', 'delete bentuk buku', 'view bentuk buku']);
+		// $search = $this->input->get('s', true);
+		// $config = pagination();
+		// $config['base_url'] = admin_url('bentuk-buku');
+		// $total = $this->bentuk_buku->total_data($search);
+		// $config['total_rows'] = $total;
+		// $from = ($this->uri->segment(3)) ? $this->uri->segment(3) : 0;
+		// $this->pagination->initialize($config);
+		// $data['bentuk_buku'] = $this->bentuk_buku->data($config['per_page'], $from, $search);
+		// $data['page'] = $this->pagination->create_links();
+		// $this->session->set_flashdata('input_data', ['s' => $search]);
 		$data['title'] = 'Bentuk Pustaka Buku';
 		return view('panel.bentuk-buku.index', $data);
+	}
+
+	public function daftar_bentuk()
+	{
+		header('Content-Type: application/json');
+		$list = $this->bentuk_buku->get_datatables();
+		$data = array();
+		$no = $this->input->post('start');
+		//looping data mahasiswa
+		foreach ($list as $data_bentuk) {
+			$no++;
+			$status = '';
+			$row = array();
+			//Status Declaration
+			if ($data_bentuk->status == '1') {
+				$status = '<button class="btn btn-sm btn-success ml-2">Aktif</button>';
+			} else {
+				$status = '<button class="btn btn-sm btn-danger ml-2">Tidak Aktif</button>';
+			};
+			//Button Action Declaration
+			if (user_can(['edit bentuk buku', 'delete bentuk buku'])) {
+				$action = '<div class="dropdown">
+														<button class="btn btn-block btn-sm btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+															Action <i class="mdi mdi-chevron-down"></i>
+														</button>
+														<div class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="">';
+				if (user_can('edit kategori buku')) {
+					$action .=
+						'<a class="dropdown-item button-edit" data-id="' . $data_bentuk->id . '">Edit</a>';
+				}
+				if (user_can('delete kategori buku')) {
+					$action .= '<button data-id="' . $data_bentuk->id . '"  data-name="' . $data_bentuk->name . '" type="button" class="dropdown-item button-delete">Hapus</button>';
+				};
+				$action .= '</div>
+					</div>';
+			} else {
+				$action = '-';
+			}
+
+
+			$row[] = $no;
+			$row[] = $data_bentuk->name;
+			$row[] = $status;
+			$row[] = $action;
+			// $row[] =  '<a class="btn btn-success btn-sm"><i class="fa fa-edit"></i> </a>
+			//       <a class="btn btn-danger btn-sm "><i class="fa fa-trash"></i> </a>';
+			$data[] = $row;
+		}
+		$output = array(
+			"draw" => $this->input->post('draw'),
+			"recordsTotal" => $this->bentuk_buku->count_all(),
+			"recordsFiltered" => $this->bentuk_buku->count_filtered(),
+			"data" => $data,
+		);
+		//output to json format
+		$this->output->set_output(json_encode($output));
 	}
 
 	public function new_bentuk()
@@ -579,30 +644,35 @@ class Book extends Admin_Controller
 		$bentuk = strtolower(trim($input['name']));
 		$exist_type = $this->bentuk_buku->exist_type($bentuk);
 		if ($exist_type) {
-			set_alert('Nama Bentuk Pustaka telah terpakai', 'danger');
-			back();
+			// set_alert('Nama Bentuk Pustaka telah terpakai', 'danger');
+			echo json_encode(['icon' => 'error', 'message' => 'Nama Bentuk Pustaka telah terpakai', 'status' => 'Gagal'], 200);
+			return false;
+			// back();
 		}
 		$category = $this->bentuk_buku->add();
-		set_alert('Perpustakaan berhasil ditambah', 'success');
+		// set_alert('Bentuk Pustaka berhasil ditambah', 'success');
 		// redirect(admin_url('bentuk-buku'));
 		$search = $this->input->get('s', true);
 		$from = ($this->uri->segment(3)) ? $this->uri->segment(3) : 0;
 		$config = pagination();
 		$data['bentuk_buku'] = $this->bentuk_buku->data($config['per_page'], $from, $search);
+		$data['page'] = $this->pagination->create_links();
 		$output = '';
 		$no = 1;
 		foreach ($data['bentuk_buku'] as $row) {
 			$output .= '<tr>
 										<td>' . $no++ . '</td>
-										<td>' . $row->name . '</td>
+										<td><strong>' . $row->name . '</strong></td>
 										<td>';
 			if ($row->status == '1') {
 				$output .= '<button class="btn btn-sm btn-success ml-2">Aktif</button>';
 			} else {
 				$output .= '<button class="btn btn-sm btn-danger ml-2">Tidak Aktif</button>';
 			};
-			$output .= '</td>
-			<td>
+			$output .= '</td>';
+			if (user_access(['edit bentuk buku', 'delete bentuk buku'])) {
+				$output .=
+					'<td>
 					<div class="dropdown">
 							<button
 									class="btn btn-block btn-sm btn-secondary dropdown-toggle"
@@ -613,22 +683,29 @@ class Book extends Admin_Controller
 							</button>
 							<div class="dropdown-menu" aria-labelledby="dropdownMenuButton"
 									style="">';
-			if (user_access(['edit bentuk buku'])) {
-				$output .= '<a class="dropdown-item"
+				if (user_access(['edit bentuk buku'])) {
+					$output .= '<a class="dropdown-item"
 							href="' . admin_url("bentuk-buku/$row->id/edit") . '">Edit</a>';
-			};
-			if (user_access(['hapus bentuk buku'])) {
-				$output .= '<button data-id="' . $row->id . '" type="button"
+				};
+				if (user_access(['hapus bentuk buku'])) {
+					$output .= '<button data-id="' . $row->id . '" type="button"
 						class="dropdown-item button-delete">Hapus</button>';
-			};
-			$output .=	'</div>
+				};
+				$output .=	'</div>
 					</div>
-			</td>
-			</tr>';
+			</td>';
+			} else {
+				$output .= '<td></td>';
+			}
+			$output .= '</tr>';
 		};
 		$data = array(
 			'table' => $output,
 			'bentuk_buku' => $this->bentuk_buku->data($config['per_page'], $from, $search),
+			'page' => $data['page'],
+			'message' => 'Bentuk Pustaka berhasil ditambah',
+			'status' => 'Berhasil',
+			'icon' => 'success'
 		);
 		echo json_encode($data);
 	}
@@ -646,41 +723,317 @@ class Book extends Admin_Controller
 		return view('panel.bentuk-buku.form', $data);
 	}
 
+	public function get_bentuk_by_id()
+	{
+		$id = $this->input->post('id');
+		$get = $this->bentuk_buku->get_by_id($id);
+		$data = array('success' => false);
+		if ($get) {
+			$data = array('success' => true, 'data' => $get);
+			echo json_encode($data);
+		}
+	}
+
 	public function update_bentuk($id)
 	{
-		user_access(['edit bentuk buku']);
-		form_validate([
-			'library' => 'required',
-			'category' => 'required',
-			'status' => 'required',
-		]);
-		$bentuk_buku = $this->bentuk_buku->get_data($id);
-		if (!$bentuk_buku) {
-			show_404();
+		$update = $this->bentuk_buku->update($id);
+		if ($update) {
+			$data = array(
+				'icon' => 'success',
+				'status' => 'Berhasil',
+				'message' => 'Nama Bentuk telah di update',
+				'success' => $update
+			);
+		} else {
+			$data = array(
+				'icon' => 'error',
+				'status' => 'Gagal',
+				'message' => 'Nama Bentuk gagal di update',
+				'success' => false
+			);
 		}
-		$input = $this->input->post(NULL, TRUE);
-		$category_name = strtolower(trim($input['category']));
-		$exists_category = $this->bentuk_buku->exists_category($bentuk_buku->library, $category_name, $id);
-		if ($exists_category) {
-			set_alert('Nama Bentuk Pustaka telah terpakai', 'danger');
-			back();
-		}
-		$bentuk_buku = $this->bentuk_buku->update($id);
-		set_alert('Bentuk Pustaka buku berhasil diubah', 'success');
-		redirect(admin_url('bentuk-buku'));
+
+		echo json_encode($data);
 	}
 
 	public function delete_bentuk($id)
 	{
-		user_access(['delete bentuk buku']);
-
-		$bentuk_buku = $this->bentuk_buku->get_data($id);
-		if (!$bentuk_buku) {
-			show_404();
+		$delete = $this->bentuk_buku->delete($id);
+		if ($delete == true) {
+			$data = array(
+				'icon' => 'success',
+				'status' => 'Berhasil',
+				'message' => 'Bentuk berhasil dihapus',
+				'success' => $delete
+			);
+		} else {
+			$data = array(
+				'icon' => 'error',
+				'status' => 'Gagal',
+				'message' => 'Bentuk gagal dihapus',
+				'success' => $delete
+			);
 		}
 
-		$bentuk_buku = $this->bentuk_buku->delete($id);
-		set_alert('Bentuk Pustaka buku berhasil dihapus', 'success');
-		redirect(admin_url('bentuk-buku'));
+		echo json_encode($data);
+	}
+
+	//Controller Bentuk Pustaka
+	public function index_subjek()
+	{
+		// user_access(['edit bentuk buku', 'add bentuk buku', 'delete bentuk buku', 'view bentuk buku']);
+		// $search = $this->input->get('s', true);
+		// $config = pagination();
+		// $config['base_url'] = admin_url('bentuk-buku');
+		// $total = $this->subjek_buku->total_data($search);
+		// $config['total_rows'] = $total;
+		// $from = ($this->uri->segment(3)) ? $this->uri->segment(3) : 0;
+		// $this->pagination->initialize($config);
+		// $data['subjek_buku'] = $this->subjek_buku->data($config['per_page'], 0, $search);
+		// $data['page'] = $this->pagination->create_links();
+		// $this->session->set_flashdata('input_data', ['s' => $search]);
+		$data['title'] = 'Klasifikasi dan Subjek';
+		return view('panel.subjek-buku.index', $data);
+	}
+
+
+	public function daftar_subjek()
+	{
+		header('Content-Type: application/json');
+		$list = $this->subjek_buku->get_datatables();
+		$data = array();
+		$no = $this->input->post('start');
+		//looping data mahasiswa
+		foreach ($list as $data_subjek) {
+			$no++;
+			$status = '';
+			$action = '';
+			$row = array();
+			//Status Declaration
+			if ($data_subjek->status == '1') {
+				$status = '<button class="btn btn-sm btn-success ml-2">Aktif</button>';
+			} else {
+				$status = '<button class="btn btn-sm btn-danger ml-2">Tidak Aktif</button>';
+			};
+			//Button Action Declaration
+			if (user_can(['edit subjek buku', 'delete subjek buku'])) {
+				$action = '<div class="dropdown">
+														<button class="btn btn-block btn-sm btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+															Action <i class="mdi mdi-chevron-down"></i>
+														</button>
+														<div class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="">';
+				if (user_can('edit kategori buku')) {
+					$action .=
+						'<a class="dropdown-item button-edit" data-id="' . $data_subjek->id . '">Edit</a>';
+				}
+				if (user_can('delete kategori buku')) {
+					$action .= '<button data-id="' . $data_subjek->id . '"  data-name="' . $data_subjek->name . '" type="button" class="dropdown-item button-delete">Hapus</button>';
+				};
+				$action .= '</div>
+				</div>';
+			} else {
+				$action = '-';
+			}
+
+
+			$row[] = $no;
+			$row[] = $data_subjek->min_value . " - " . $data_subjek->max_value;
+			$row[] = $data_subjek->name;
+			$row[] = $status;
+			$row[] = $action;
+			// $row[] =  '<a class="btn btn-success btn-sm"><i class="fa fa-edit"></i> </a>
+			//       <a class="btn btn-danger btn-sm "><i class="fa fa-trash"></i> </a>';
+			$data[] = $row;
+		}
+		$output = array(
+			"draw" => $this->input->post('draw'),
+			"recordsTotal" => $this->subjek_buku->count_all(),
+			"recordsFiltered" => $this->subjek_buku->count_filtered(),
+			"data" => $data,
+		);
+		//output to json format
+		$this->output->set_output(json_encode($output));
+	}
+
+	public function add_subjek()
+	{
+		$insert = $this->subjek_buku->add();
+		$data = array(
+			'icon' => 'success',
+			'status' => 'Berhasil',
+			'message' => 'Nama Subjek telah ditambah',
+			'data' => $insert
+		);
+		echo json_encode($data);
+	}
+
+	public function get_subjek_by_id()
+	{
+		$id = $this->input->post('id');
+		$get = $this->subjek_buku->get_by_id($id);
+		$data = array('success' => false);
+		if ($get) {
+			$data = array('success' => true, 'data' => $get);
+			echo json_encode($data);
+		}
+	}
+
+	public function update_subjek($id)
+	{
+		$update = $this->subjek_buku->update($id);
+		if ($update) {
+			$data = array(
+				'icon' => 'success',
+				'status' => 'Berhasil',
+				'message' => 'Nama Subjek telah di update',
+				'success' => $update
+			);
+		} else {
+			$data = array(
+				'icon' => 'error',
+				'status' => 'Gagal',
+				'message' => 'Nama Subjek gagal di update',
+				'success' => false
+			);
+		}
+
+		echo json_encode($data);
+	}
+
+	public function delete_subjek($id)
+	{
+		$delete = $this->subjek_buku->delete($id);
+		if ($delete == true) {
+			$data = array(
+				'icon' => 'success',
+				'status' => 'Berhasil',
+				'message' => 'Subjek berhasil dihapus',
+				'success' => $delete
+			);
+		} else {
+			$data = array(
+				'icon' => 'error',
+				'status' => 'Gagal',
+				'message' => 'Subjek gagal dihapus',
+				'success' => $delete
+			);
+		}
+
+		echo json_encode($data);
+	}
+
+
+	//Ekspor impor Buku
+	public function export_excel_buku()
+	{
+		$data_buku = $this->buku->export_excel_master_buku();
+		// var_dump($data_buku);
+		// exit();
+
+		// $get_header = $this->buku->header_excel_buku();
+		// foreach ($get_header as $row) {
+		// 	$res_header = array_keys($row);
+		// 	// foreach ($i as $field) {
+		// 	// 	echo $field;
+		// 	// }
+		// }
+		// $fields = array_keys($header);
+		// print_r($i);
+		// exit();
+		$spreadsheet = new Spreadsheet();
+		$sheet = $spreadsheet->getActiveSheet();
+
+		// Buat sebuah variabel untuk menampung pengaturan style dari header tabel
+		$style_col = [
+			'font' => ['bold' => true], // Set font nya jadi bold
+			'alignment' => [
+				'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER, // Set text jadi ditengah secara horizontal (center)
+				'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER // Set text jadi di tengah secara vertical (middle)
+			],
+			'borders' => [
+				'top' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN], // Set border top dengan garis tipis
+				'right' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],  // Set border right dengan garis tipis
+				'bottom' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN], // Set border bottom dengan garis tipis
+				'left' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN] // Set border left dengan garis tipis
+			]
+		];
+		// Buat sebuah variabel untuk menampung pengaturan style dari isi tabel
+		$style_row = [
+			'alignment' => [
+				'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER // Set text jadi di tengah secara vertical (middle)
+			],
+			'borders' => [
+				'top' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN], // Set border top dengan garis tipis
+				'right' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],  // Set border right dengan garis tipis
+				'bottom' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN], // Set border bottom dengan garis tipis
+				'left' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN] // Set border left dengan garis tipis
+			]
+		];
+		$sheet->setCellValue('A1', "Master Buku"); // Set kolom A1 dengan tulisan "DATA SISWA"
+		$sheet->mergeCells('A1:E1'); // Set Merge Cell pada kolom A1 sampai E1
+		$sheet->getStyle('A1')->getFont()->setBold(true); // Set bold kolom A1
+
+		// $col = 3;
+		// foreach ($res_header as $header) {
+		// 	$sheet->setCellValue('A' . $col, $header); // Set kolom A3 dengan tulisan "NO"
+		// 	$sheet->getStyle('A' . $col)->applyFromArray($style_col);
+		// 	$col++;
+		// }
+		// Buat header tabel nya pada baris ke 3
+		$sheet->setCellValue('A3', "Judul"); // Set kolom A3 dengan tulisan "NO"
+		$sheet->setCellValue('B3', "Bentuk"); // Set kolom B3 dengan tulisan "NIS"
+		$sheet->setCellValue('C3', "ISBN"); // Set kolom D3 dengan tulisan "JENIS KELAMIN"
+		$sheet->setCellValue('D3', "Penerbit"); // Set kolom E3 dengan tulisan "ALAMAT"
+		$sheet->setCellValue('E3', "Bentuk"); // Set kolom E3 dengan tulisan "ALAMAT"
+		$sheet->setCellValue('F3', "Subjek"); // Set kolom E3 dengan tulisan "ALAMAT"
+		// Apply style header yang telah kita buat tadi ke masing-masing kolom header
+		$sheet->getStyle('A3')->applyFromArray($style_col);
+		$sheet->getStyle('B3')->applyFromArray($style_col);
+		$sheet->getStyle('C3')->applyFromArray($style_col);
+		$sheet->getStyle('D3')->applyFromArray($style_col);
+		$sheet->getStyle('E3')->applyFromArray($style_col);
+		$sheet->getStyle('F3')->applyFromArray($style_col);
+
+		$no = 1; // Untuk penomoran tabel, di awal set dengan 1
+		$numrow = 4; // Set baris pertama untuk isi tabel adalah baris ke 4
+		foreach ($data_buku as $item) {
+
+			$sheet->setCellValue('A' . $numrow, $item->title ? $item->title : '');
+			$sheet->setCellValue('B' . $numrow, $item->bentuk ? $item->bentuk : 0);
+			$sheet->setCellValue('C' . $numrow, $item->isbn ? $item->isbn : 0);
+			$sheet->setCellValue('D' . $numrow, $item->publisher ? $item->publisher : '');
+			$sheet->setCellValue('E' . $numrow, $item->bentuk ? $item->bentuk : '');
+			$sheet->setCellValue('F' . $numrow, $item->books_subjectid ? $item->books_subjectid : '');
+
+
+			// Apply style row yang telah kita buat tadi ke masing-masing baris (isi tabel)
+			$sheet->getStyle('A' . $numrow)->applyFromArray($style_row);
+			$sheet->getStyle('B' . $numrow)->applyFromArray($style_row);
+			$sheet->getStyle('C' . $numrow)->applyFromArray($style_row);
+			$sheet->getStyle('D' . $numrow)->applyFromArray($style_row);
+			$sheet->getStyle('E' . $numrow)->applyFromArray($style_row);
+			$sheet->getStyle('F' . $numrow)->applyFromArray($style_row);
+
+			$no++; // Tambah 1 setiap kali looping
+			$numrow++; // Tambah 1 setiap kali looping
+		}
+		// Set width kolom
+		$sheet->getColumnDimension('A')->setWidth(10); // Set width kolom A
+		$sheet->getColumnDimension('B')->setWidth(50); // Set width kolom B
+		$sheet->getColumnDimension('C')->setWidth(20); // Set width kolom C
+		$sheet->getColumnDimension('D')->setWidth(20); // Set width kolom D
+
+		// Set height semua kolom menjadi auto (mengikuti height isi dari kolommnya, jadi otomatis)
+		$sheet->getDefaultRowDimension()->setRowHeight(-1);
+		// Set orientasi kertas jadi LANDSCAPE
+		$sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
+		// Set judul file excel nya
+		$sheet->setTitle("Master Buku");
+		// Proses file excel
+		header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+		header("Content-Disposition: attachment; filename=Master Buku.xlsx"); // Set nama file excel nya
+		header('Cache-Control: max-age=0');
+		$writer = new Xlsx($spreadsheet);
+		$writer->save('php://output');
 	}
 }

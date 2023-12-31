@@ -8,52 +8,55 @@ class Pengaturan_role_issue_model extends App_Model
 	{
 		parent::__construct();
 		$this->config->load('roles', true);
-		$this->roles=$this->config->item('roles');
+		$this->roles = $this->config->item('roles');
 		$this->table = db_prefix() . 'role_issues';
 		$this->table_library = db_prefix() . 'libraries';
 		$this->table_prefix = '';
 		$this->db = $this->load->database('default', true);
 	}
 
-	public function data(){
-		$this->db->where($this->column('deleted_at',null));
+	public function data()
+	{
+		$this->db->where($this->column('deleted_at', null));
 		$this->db->order_by($this->column('library'), 'asc');
 		$data = $this->db->get($this->table_library)->result();
 		foreach ($data as $key => $item) {
-			$roles= $this->lib_role($item->id);
-			$role_name='';
-			foreach ($roles as $key1=>$role) {
-				$comma=count($roles)-1 == $key1 ? '':', ';
+			$roles = $this->lib_role($item->id);
+			$role_name = '';
+			foreach ($roles as $key1 => $role) {
+				$comma = count($roles) - 1 == $key1 ? '' : ', ';
 				foreach ($this->roles as $value) {
 					if ($value['id'] == $role) {
-						$role_name = $role_name.$value['name']. $comma;
+						$role_name = $role_name . $value['name'] . $comma;
 					}
 				}
 			}
-			if($role_name == ''){
-				$role_name='-';
+			if ($role_name == '') {
+				$role_name = '-';
 			}
-			$data[$key]->library_name= $data[$key]->library;
-			$data[$key]->role_name= $role_name;
+			$data[$key]->library_name = $data[$key]->library;
+			$data[$key]->role_name = $role_name;
 		}
 		return $data;
 	}
 
-	public function lib_role($id){
-		$this->db->where($this->column('library'),$id);
-		$data=$this->db->get($this->table)->row();
-		if(!$data){
+	public function lib_role($id)
+	{
+		$this->db->where($this->column('library'), $id);
+		$data = $this->db->get($this->table)->row();
+		if (!$data) {
 			return array();
-		}else{
+		} else {
 			return !empty($data->roles) ? unserialize($data->roles) : [];
 		}
 	}
 
-	public function get_data($id){
+	public function get_data($id)
+	{
 		$this->db->where($this->column('id'), $id);
 		$this->db->where($this->column('deleted_at'), null);
 		$data = $this->db->get($this->table)->row();
-		if(!$data){
+		if (!$data) {
 			return false;
 		}
 		$library_name = '-';
@@ -74,8 +77,9 @@ class Pengaturan_role_issue_model extends App_Model
 		return $data;
 	}
 
-	public function check($library=null,$role=null){
-		if(!$library || !$role){
+	public function check($library = null, $role = null)
+	{
+		if (!$library || !$role) {
 			return false;
 		}
 		$this->db->where($this->column('library'), $library);
@@ -84,7 +88,7 @@ class Pengaturan_role_issue_model extends App_Model
 		$data = $this->db->get($this->table)->row();
 		if (!$data) {
 			return false;
-		}else{
+		} else {
 			return true;
 		}
 	}
@@ -104,28 +108,30 @@ class Pengaturan_role_issue_model extends App_Model
 		return $this->db->insert_id();
 	}
 
-	public function update($id){
+	public function update($id)
+	{
 		$input = $this->input->post(NULL, TRUE);
-		$roles=isset($input['role']) && is_array($input['role']) ? serialize($input['role']):serialize(array());
+		$roles = isset($input['role']) && is_array($input['role']) ? serialize($input['role']) : serialize(array());
 		$data = [
 			'roles' => $roles,
 			'library' => $input['library'],
 			'updated_at' => now(),
 			'updated_by' => current_user(),
 		];
-		$this->db->where($this->column('library'),$id);
+		$this->db->where($this->column('library'), $id);
 		$data_exists = $this->db->get($this->table)->row();
-		if(!$data_exists){
-			$data['created_at']=now();
-			$data['created_by']= current_user();
+		if (!$data_exists) {
+			$data['created_at'] = now();
+			$data['created_by'] = current_user();
 			$this->db->insert($this->table, $data);
-		}else{
+		} else {
 			$this->db->where($this->column('id'), $data_exists->id);
 			$this->db->update($this->table, $data);
 		}
 	}
 
-	public function delete($id){
+	public function delete($id)
+	{
 		$this->db->where($this->column('id'), $id);
 		$this->db->delete($this->table);
 	}

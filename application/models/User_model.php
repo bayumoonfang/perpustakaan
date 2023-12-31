@@ -15,7 +15,7 @@ class User_model extends App_Model
 	public function get_user_row($param = NULL, $where = 'id')
 	{
 		$this->db->where($where, $param);
-		$this->db->where($this->table_prefix .'isdelete', '0');
+		$this->db->where($this->table_prefix . 'isdelete', '0');
 		$user = $this->db->get($this->table)->row();
 		if (empty($user)) {
 			return false;
@@ -23,19 +23,20 @@ class User_model extends App_Model
 		return $user;
 	}
 
-	public function login(){
+	public function login()
+	{
 		$username = $this->input->post('username', true);
 		$password = $this->input->post('password', true);
 		if (empty($username) && empty($password)) {
 			return false;
 		}
-		$user = $this->get_user_row($username, $this->table_prefix .'no');
+		$user = $this->get_user_row($username, $this->table_prefix . 'no');
 		if (!$user) {
 			//user not exists
 			return false;
 		}
 		// check password
-		$valid = strEncrypt($password)== $user->user_password;
+		$valid = strEncrypt($password) == $user->user_password;
 		if (!$valid) {
 			return false;
 		}
@@ -47,7 +48,8 @@ class User_model extends App_Model
 		return $user;
 	}
 
-	public function login_ssi($user_id){
+	public function login_ssi($user_id)
+	{
 		$user = $this->get_user_row($user_id, $this->table_prefix . 'id');
 		if (!$user) {
 			//user not exists
@@ -60,7 +62,8 @@ class User_model extends App_Model
 		return $user;
 	}
 
-	protected function set_user_sessions($user){
+	protected function set_user_sessions($user)
+	{
 		$user_data = [
 			session_prefix() . 'user_id'  => $user->user_id,
 			session_prefix() . 'user_role' => $user->user_roleid,
@@ -71,14 +74,15 @@ class User_model extends App_Model
 		$this->session->set_userdata($user_data);
 	}
 
-	public function permissions($userid){
-		$this->db->where('user',$userid);
-		$user_permissions=$this->db->get(db_master_prefix() . 'master_user_permissions')->result();
-		$permission_list=array();
+	public function permissions($userid)
+	{
+		$this->db->where('user', $userid);
+		$user_permissions = $this->db->get(db_master_prefix() . 'master_user_permissions')->result();
+		$permission_list = array();
 		foreach ($user_permissions as $key => $permission) {
-			$this->db->where('id',$permission->permission);
+			$this->db->where('id', $permission->permission);
 			$master_permissions = $this->db->get(db_master_prefix() . 'master_permissions')->row();
-			if($master_permissions){
+			if ($master_permissions) {
 				$data = array(
 					'id' => $master_permissions->id,
 					'permission' => $master_permissions->permission,
@@ -89,7 +93,9 @@ class User_model extends App_Model
 		return $permission_list;
 	}
 
-	public function get_member($search){
+	public function get_member($search)
+	{
+		// $term = $_GET['term'];
 		$master_db = $this->load->database('master', true);
 		$user_table = db_master_prefix() . 'master_user';
 		$sekolah_id = current_user('user_sekolahid');
@@ -98,25 +104,31 @@ class User_model extends App_Model
 		$master_db->like('user_no', $search);
 		$master_db->or_like('user_nama', $search);
 		$master_db->group_end();
-		
+
 		$master_db->where('user_status', '1');
 		$master_db->where('user_isdelete', '0');
-		$data=$master_db->get($user_table)->result();
+		$data = $master_db->get($user_table)->result_array();
+		// $arr = array();
+		// foreach ($data as  $item) {
+		// 	// array_push($arr, $item->user_nama);
+		// 	$arr[] = array("id" => $item->user_no, "nama" => $item->user_nama);
+		// }
 		return $data;
 	}
 
-	public function cek_member($id){
+	public function cek_member($id)
+	{
 		$master_db = $this->load->database('master', true);
 		$user_table = db_master_prefix() . 'master_user';
-		
+
 		$sekolah_id = current_user('user_sekolahid');
 		$master_db->where('user_sekolahid', $sekolah_id);
-	
+
 		$master_db->where('user_id', $id);
 		$master_db->where('user_status', '1');
 		$master_db->where('user_isdelete', '0');
-		$data=$master_db->get($user_table)->row();
-		if(!$data){
+		$data = $master_db->get($user_table)->row();
+		if (!$data) {
 			return false;
 		}
 		return $data;

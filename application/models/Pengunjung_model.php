@@ -5,6 +5,7 @@ class Pengunjung_model extends App_Model
 	private $table;
 	private $table_user;
 	private $table_role;
+	private $table_sekolah;
 	private $table_library;
 	public $table_prefix;
 	private $db;
@@ -16,11 +17,13 @@ class Pengunjung_model extends App_Model
 		$this->table_library = db_prefix() . 'libraries';
 		$this->table_prefix = '';
 		$this->table_user = db_master_prefix() . 'master_user';
+		$this->table_sekolah = db_master_prefix() . 'master_sekolah';
 		$this->table_role = db_master_prefix() . 'master_role';
 		$this->db = $this->load->database('default', true);
 	}
 
-	public function user_libs(){
+	public function user_libs()
+	{
 		if (!is_admin()) {
 			$user_library = $this->user_library();
 			if (!empty($user_library)) {
@@ -46,22 +49,23 @@ class Pengunjung_model extends App_Model
 	// 	}
 	// }
 
-	public function data($number = 10, $offset = 0){
+	public function data($number = 10, $offset = 0)
+	{
 		$lib_id = $this->input->get('library', true);
 		$start = $this->input->get('start', true);
 		$end = $this->input->get('end', true);
-		
-		if($start && $end){
+
+		if ($start && $end) {
 			$this->db->group_start();
-			$this->db->where($this->column('date').'<=', $end);
-			$this->db->where($this->column('date').'>=', $start);
+			$this->db->where($this->column('date') . '<=', $end);
+			$this->db->where($this->column('date') . '>=', $start);
 			$this->db->group_end();
 		}
-		if($lib_id){
+		if ($lib_id) {
 			$this->db->group_start();
 			$this->db->where($this->column('library'), $lib_id);
 			$this->db->group_end();
-		}else{
+		} else {
 			$this->user_libs();
 		}
 		$this->db->where($this->column('deleted_at'), null);
@@ -69,15 +73,51 @@ class Pengunjung_model extends App_Model
 		$data = $this->db->get($this->table, $number, $offset)->result();
 		foreach ($data as $key => $item) {
 			$date = date_create($item->date);
-			$data[$key]->tanggal=date_format($date, "d-m-Y");;
-			$data[$key]->user_detail=$this->detail_user($item->user);
-			$data[$key]->role_detail=$this->detail_role($item->status);
-			$data[$key]->library_detail=$this->detail_library($item->library);
+			$data[$key]->tanggal = date_format($date, "d-m-Y");;
+			$data[$key]->user_detail = $this->detail_user($item->user);
+			$data[$key]->role_detail = $this->detail_role($item->status);
+			$data[$key]->library_detail = $this->detail_library($item->library);
+			$data[$key]->school_detail = $this->detail_school($item->user);
 		}
 		return $data;
 	}
 
-	public function all_data($lib_id){
+	public function count_data($number = 10, $offset = 0)
+	{
+		$lib_id = $this->input->get('library', true);
+		$start = $this->input->get('start', true);
+		$end = $this->input->get('end', true);
+
+		if ($start && $end) {
+			$this->db->group_start();
+			$this->db->where($this->column('date') . '<=', $end);
+			$this->db->where($this->column('date') . '>=', $start);
+			$this->db->group_end();
+		}
+		if ($lib_id) {
+			$this->db->group_start();
+			$this->db->where($this->column('library'), $lib_id);
+			$this->db->group_end();
+		} else {
+			$this->user_libs();
+		}
+		$this->db->select(" COUNT(*) as jumlah, user, library,status, is_guest, guest_name, institution", false);
+		$this->db->where($this->column('deleted_at'), null);
+		$this->db->group_by("user, library");
+		$this->db->order_by($this->column('date'), 'desc');
+		$data = $this->db->get($this->table, $number, $offset)->result();
+		foreach ($data as $key => $item) {
+			// $date = date_create($item->date);
+			// $data[$key]->tanggal = date_format($date, "d-m-Y");;
+			$data[$key]->user_detail = $this->detail_user($item->user);
+			$data[$key]->role_detail = $this->detail_role($item->status);
+			$data[$key]->library_detail = $this->detail_library($item->library);
+		}
+		return $data;
+	}
+
+	public function all_data($lib_id)
+	{
 		$start = $this->input->get('start', true);
 		$end = $this->input->get('end', true);
 
@@ -93,15 +133,16 @@ class Pengunjung_model extends App_Model
 		$data = $this->db->get($this->table)->result();
 		foreach ($data as $key => $item) {
 			$date = date_create($item->date);
-			$data[$key]->tanggal=date_format($date, "d-m-Y");;
-			$data[$key]->user_detail=$this->detail_user($item->user);
-			$data[$key]->role_detail=$this->detail_role($item->status);
-			$data[$key]->library_detail=$this->detail_library($item->library);
+			$data[$key]->tanggal = date_format($date, "d-m-Y");;
+			$data[$key]->user_detail = $this->detail_user($item->user);
+			$data[$key]->role_detail = $this->detail_role($item->status);
+			$data[$key]->library_detail = $this->detail_library($item->library);
 		}
 		return $data;
 	}
 
-	public function total_data(){
+	public function total_data()
+	{
 		$lib_id = $this->input->get('library', true);
 		$start = $this->input->get('start', true);
 		$end = $this->input->get('end', true);
@@ -123,8 +164,9 @@ class Pengunjung_model extends App_Model
 		$total = $this->db->get($this->table)->num_rows();
 		return !empty($total) ? $total : 0;
 	}
-	
-	public function detail_user($user){
+
+	public function detail_user($user)
+	{
 		$master_db = $this->load->database('master', true);
 		$master_db->where('user_id', $user);
 		$data = $master_db->get($this->table_user)->row();
@@ -134,8 +176,27 @@ class Pengunjung_model extends App_Model
 			return $data;
 		}
 	}
+	public function detail_school($user)
+	{
+		$master_db = $this->load->database('master', true);
+		$master_db->select('*');
+		$master_db->from('master_user');
+		$master_db->join('master_sekolah', 'master_user.user_sekolahid = master_sekolah.sekolah_id');
+		$master_db->where('master_user.user_id', $user);
+		$data = $master_db->get()->row();
+		// $master_db = 
+		// $master_db->join('')
+		// $master_db->where('sekolah_id', $user);
+		// $data = $master_db->get($this->table_sekolah)->row();
+		if (!$data) {
+			return null;
+		} else {
+			return $data;
+		}
+	}
 
-	public function detail_role($role){
+	public function detail_role($role)
+	{
 		$master_db = $this->load->database('master', true);
 		$master_db->where('role_id', $role);
 		$data = $master_db->get($this->table_role)->row();
@@ -145,8 +206,9 @@ class Pengunjung_model extends App_Model
 			return $data;
 		}
 	}
-	public function detail_library($lib){
-		
+	public function detail_library($lib)
+	{
+
 		$this->db->where('id', $lib);
 		$data = $this->db->get($this->table_library)->row();
 		if (!$data) {
@@ -156,7 +218,8 @@ class Pengunjung_model extends App_Model
 		}
 	}
 
-	public function cek_user($user){
+	public function cek_user($user)
+	{
 		$master_db = $this->load->database('master', true);
 		$master_db->where('user_no', $user);
 		$master_db->where('user_status', '1');
@@ -164,27 +227,29 @@ class Pengunjung_model extends App_Model
 		$data = $master_db->get($this->table_user)->row();
 		if (!$data) {
 			return false;
-		}else{
+		} else {
 			return $data;
 		}
 	}
 
-	public function cek_user_library($user,$lib_id){
-		$detail_lib=$this->detail_library($lib_id);
-		if($detail_lib){
-			if(!$user){
+	public function cek_user_library($user, $lib_id)
+	{
+		$detail_lib = $this->detail_library($lib_id);
+		if ($detail_lib) {
+			if (!$user) {
 				return false;
 			}
-			if($user->user_sekolahid != $detail_lib->school){
+			if ($user->user_sekolahid != $detail_lib->school) {
 				return false;
 			}
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 	}
 
-	public function post_pengunjung($input, $user){
+	public function post_pengunjung($input, $user)
+	{
 		date_default_timezone_set('Asia/Jakarta');
 		$data = [
 			'library' => $input['library'],
@@ -202,7 +267,8 @@ class Pengunjung_model extends App_Model
 		return $this->db->insert_id();
 	}
 
-	public function post_guest($data_post){
+	public function post_guest($data_post)
+	{
 		date_default_timezone_set('Asia/Jakarta');
 		$data = [
 			'is_guest' => '1',

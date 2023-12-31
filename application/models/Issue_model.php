@@ -19,20 +19,20 @@ class Issue_model extends App_Model
 		$this->load->helper('date');
 	}
 
-	public function total_data($search = null,$status='pinjam')
+	public function total_data($search = null, $status = 'pinjam')
 	{
 		if (!is_admin()) {
 			$user_library = $this->user_library();
 			if (!empty($user_library)) {
 				$this->db->where_in($this->column('library'), $user_library);
-			}else{
+			} else {
 				return 0;
 			}
 		}
 		if (!empty($search)) {
 			$search_book = $this->search_book($search);
 			$search_user = $this->search_user($search);
-			if(!empty($search_book) || !empty($search_user)){
+			if (!empty($search_book) || !empty($search_user)) {
 				$this->db->group_start();
 				if (!empty($search_book)) {
 					$this->db->where_in($this->column('book'), $search_book);
@@ -41,7 +41,7 @@ class Issue_model extends App_Model
 					$this->db->or_where_in($this->column('user'), $search_user);
 				}
 				$this->db->group_end();
-			}elseif(empty($search_book) && empty($search_user)){
+			} elseif (empty($search_book) && empty($search_user)) {
 				return 0;
 			}
 		}
@@ -63,7 +63,7 @@ class Issue_model extends App_Model
 			$user_library = $this->user_library();
 			if (!empty($user_library)) {
 				$this->db->where_in($this->column('library'), $user_library);
-			}else{
+			} else {
 				return array();
 			}
 		}
@@ -83,10 +83,10 @@ class Issue_model extends App_Model
 				return [];
 			}
 		}
-		$tgl_kembali=$this->input->get('due_date', true);
-		if($tgl_kembali){
+		$tgl_kembali = $this->input->get('due_date', true);
+		if ($tgl_kembali) {
 			$this->db->group_start();
-			$this->db->where($this->column('expired_date'), $tgl_kembali.' 23:59:59');
+			$this->db->where($this->column('expired_date'), $tgl_kembali . ' 23:59:59');
 			$this->db->group_end();
 		}
 		$this->db->where($this->column('status'), $status);
@@ -94,27 +94,27 @@ class Issue_model extends App_Model
 		$this->db->order_by($this->column('id'), 'desc');
 		$data = $this->db->get($this->table, $number, $offset)->result();
 		foreach ($data as $key => $item) {
-			$book_title='-';
-			$book_code='-';
-			$user_no='-';
-			$user_nama='-';
-			$user_alamat='-';
-			$book_data= $this->book_data($item->book, $item->library);
-			$user_data= $this->user_data($item->user);
-			if($book_data){
+			$book_title = '-';
+			$book_code = '-';
+			$user_no = '-';
+			$user_nama = '-';
+			$user_alamat = '-';
+			$book_data = $this->book_data($item->book, $item->library);
+			$user_data = $this->user_data($item->user);
+			if ($book_data) {
 				$book_title = $book_data->title;
 				$book_code = $book_data->code;
 			}
-			if($user_data){
+			if ($user_data) {
 				$user_no = $user_data->user_uid;
 				$user_alamat = $user_data->user_alamat;
 				$user_nama = $user_data->user_nama;
 			}
-			$data[$key]->book_title= $book_title;
-			$data[$key]->book_code= $book_code;
-			$data[$key]->user_no= $user_no;
-			$data[$key]->user_nama= $user_nama;
-			$data[$key]->user_alamat= $user_alamat;
+			$data[$key]->book_title = $book_title;
+			$data[$key]->book_code = $book_code;
+			$data[$key]->user_no = $user_no;
+			$data[$key]->user_nama = $user_nama;
+			$data[$key]->user_alamat = $user_alamat;
 			$data[$key]->expired = strtotime($item->expired_date) <= strtotime(date('Y-m-d 00:00:00')) ? true : false;
 			$data[$key]->tgl_pinjam = date_format(date_create($item->issue_date), 'Y-m-d');
 			$data[$key]->tgl_pinjam = date_format(date_create($item->issue_date), 'Y-m-d');
@@ -127,12 +127,13 @@ class Issue_model extends App_Model
 		return $data;
 	}
 
-	private function search_user($search){
-		$db_user=$this->load->database('master', true);
-		$user_prefix='user_';
+	private function search_user($search)
+	{
+		$db_user = $this->load->database('master', true);
+		$user_prefix = 'user_';
 		if (!is_admin()) {
 			$sekolah_id = current_user('user_sekolahid');
-			$db_user->where($user_prefix.'sekolahid', $sekolah_id);
+			$db_user->where($user_prefix . 'sekolahid', $sekolah_id);
 		}
 		if (!empty($search)) {
 			$db_user->group_start();
@@ -151,7 +152,7 @@ class Issue_model extends App_Model
 		foreach ($data as $key => $values) {
 			array_push($result, $values->user_id);
 		}
-		
+
 		return $result;
 	}
 
@@ -171,30 +172,31 @@ class Issue_model extends App_Model
 		if (empty($data)) {
 			return false;
 		}
-		$book_detail=null;
-		$user_detail=null;
-		$book_data=$this->book_data($data->book, $data->library);
-		if($book_data){
-			$book_detail=$book_data;
+		$book_detail = null;
+		$user_detail = null;
+		$book_data = $this->book_data($data->book, $data->library);
+		if ($book_data) {
+			$book_detail = $book_data;
 		}
 		$user_data = $this->user_data($data->user);
 		if ($user_data) {
 			$user_detail = $user_data;
 		}
-		if(!$user_data || !$book_data){
+		if (!$user_data || !$book_data) {
 			return false;
 		}
-		$data->book=$book_detail;
-		$data->user= $user_detail;
+		$data->book = $book_detail;
+		$data->user = $user_detail;
 		return $data;
 	}
 
-	private function search_book($search){
+	private function search_book($search)
+	{
 		if (!is_admin()) {
 			$user_library = $this->user_library();
 			if (!empty($user_library)) {
 				$this->db->where_in($this->column('library'), $user_library);
-			}else{
+			} else {
 				return array();
 			}
 		}
@@ -212,15 +214,16 @@ class Issue_model extends App_Model
 		foreach ($data as $key => $values) {
 			array_push($result, $values->id);
 		}
-		
+
 		return $result;
 	}
 
-	public function book_data($book_id,$library_id){
+	public function book_data($book_id, $library_id)
+	{
 		$this->db->where('id', $book_id);
 		$this->db->where('library', $library_id);
-		$data=$this->db->get(db_prefix() . 'books')->row();
-		if(empty($data)){
+		$data = $this->db->get(db_prefix() . 'books')->row();
+		if (empty($data)) {
 			return false;
 		}
 		$category_name = '-';
@@ -240,15 +243,16 @@ class Issue_model extends App_Model
 		return $data;
 	}
 
-	public function get_user_history($user,$library){
-		if(!is_array($library)){
+	public function get_user_history($user, $library)
+	{
+		if (!is_array($library)) {
 			return array();
 		}
-		$arrLib=array();
+		$arrLib = array();
 		foreach ($library as $value) {
-			array_push($arrLib,$value->id);
+			array_push($arrLib, $value->id);
 		}
-		if(empty($arrLib)){
+		if (empty($arrLib)) {
 			return array();
 		}
 		$this->db->where_in($this->column('library'), $arrLib);
@@ -258,53 +262,56 @@ class Issue_model extends App_Model
 		$this->db->order_by($this->column('expired_date'), 'desc');
 		$data = $this->db->get(db_prefix() . 'issues')->result();
 		foreach ($data as $key => $value) {
-			$book=null;
-			$library_name='-';
-			$expired=false;
-			$data_book=$this->book_data($value->book,$value->library);
-			if($data_book){
-				$book= $data_book;
+			$book = null;
+			$library_name = '-';
+			$expired = false;
+			$data_book = $this->book_data($value->book, $value->library);
+			if ($data_book) {
+				$book = $data_book;
 			}
-			$this->db->where($this->column('id'),$value->library);
-			$data_library=$this->db->get($this->table_library)->row();
-			if($data_library){
-				$library_name=ucfirst($data_library->library);
+			$this->db->where($this->column('id'), $value->library);
+			$data_library = $this->db->get($this->table_library)->row();
+			if ($data_library) {
+				$library_name = ucfirst($data_library->library);
 			}
 			$data[$key]->library_name = $library_name;
 			$data[$key]->book = $book;
-			$data[$key]->expired = strtotime($value->expired_date) <= strtotime(date('Y-m-d 00:00:00')) ? true:false;
-			$data[$key]->issue_date = date_format(date_create($value->issue_date),'d F Y');
-			$data[$key]->return_date = date_format(date_create($value->return_date),'d F Y');
-			$data[$key]->expired_date = date_format(date_create($value->expired_date),'d F Y');
+			$data[$key]->expired = strtotime($value->expired_date) <= strtotime(date('Y-m-d 00:00:00')) ? true : false;
+			$data[$key]->issue_date = date_format(date_create($value->issue_date), 'd F Y');
+			$data[$key]->return_date = date_format(date_create($value->return_date), 'd F Y');
+			$data[$key]->expired_date = date_format(date_create($value->expired_date), 'd F Y');
 		}
 		return $data;
 	}
 
-	public function get_count_user_history_by_library($user,$library){
-		
+	public function get_count_user_history_by_library($user, $library)
+	{
+
 		$this->db->where_in($this->column('library'), $library);
 		$this->db->where($this->column('user'), $user);
 		$this->db->where($this->column('deleted_at'), null);
 		$this->db->where($this->column('status'), 'pinjam');
 		$data = $this->db->get(db_prefix() . 'issues')->num_rows();
-		
+
 		return !empty($data) ? $data : 0;
 	}
 
-	public function user_data($user_id){
-		$db_user=$this->load->database('master', true);
+	public function user_data($user_id)
+	{
+		$db_user = $this->load->database('master', true);
 		$db_user->where('user_id', $user_id);
-		$data=$db_user->get('master_user')->row();
-		if(empty($data)){
+		$data = $db_user->get('master_user')->row();
+		if (empty($data)) {
 			return false;
 		}
 		return $data;
 	}
 
-	public function store($data){
-		$setting=$data['setting'];
-		$return_date= date('Y-m-d 23:59:59', strtotime(date('Y-m-d') . ' + '. $setting->hari_pinjam.' days'));
-		if(isset($data['book']) && is_array($data['book'])){
+	public function store($data)
+	{
+		$setting = $data['setting'];
+		$return_date = date('Y-m-d 23:59:59', strtotime(date('Y-m-d') . ' + ' . $setting->hari_pinjam . ' days'));
+		if (isset($data['book']) && is_array($data['book'])) {
 			foreach ($data['book'] as $value) {
 				$data_issue = array(
 					'library' => $data['library'],
@@ -323,12 +330,13 @@ class Issue_model extends App_Model
 		}
 	}
 
-	public function proses_kembali($data){
-		$issue_id=$data['issue'];
+	public function proses_kembali($data)
+	{
+		$issue_id = $data['issue'];
 		$data_issue = array(
 			'return_date' => date('Y-m-d'),
 			'status' => $data['status'],
-			'notes' => isset($data['notes']) && $data['notes']!='' ? $data['notes']:null,
+			'notes' => isset($data['notes']) && $data['notes'] != '' ? $data['notes'] : null,
 			'updated_at' => now(),
 			'updated_by' => current_user(),
 		);
@@ -337,7 +345,8 @@ class Issue_model extends App_Model
 		return true;
 	}
 
-	public function update_duration($id,$expired){
+	public function update_duration($id, $expired)
+	{
 		$return_date = date('Y-m-d 23:59:59', strtotime($expired . ' + 0 days'));
 		$data_issue = array(
 			'expired_date' => $return_date,
@@ -349,12 +358,13 @@ class Issue_model extends App_Model
 		return true;
 	}
 
-	public function total_pinjam_dashboard($start_date,$end_date, $all = true){
+	public function total_pinjam_dashboard($start_date, $end_date, $all = true)
+	{
 		$library = $this->input->get('library', true);
 		if (is_admin() && !empty($library)) {
 			$this->db->where($this->column('library'), $library);
 		}
-		if(!$all){
+		if (!$all) {
 			$this->db->where($this->column('issue_date') . '>=', $start_date);
 			$this->db->where($this->column('issue_date') . '<=', $end_date);
 		}
@@ -371,7 +381,7 @@ class Issue_model extends App_Model
 		return !empty($data) ? $data : 0;
 	}
 
-	public function data_pinjam_by_book($book,$number = 10, $offset = 0, $search = null, $status = 'pinjam')
+	public function data_pinjam_by_book($book, $number = 10, $offset = 0, $search = null, $status = 'pinjam')
 	{
 		if (!is_admin()) {
 			$user_library = $this->user_library();
@@ -432,7 +442,7 @@ class Issue_model extends App_Model
 		return $data;
 	}
 
-	public function total_data_pinjam_by_book($book,$search = null)
+	public function total_data_pinjam_by_book($book, $search = null)
 	{
 		if (!is_admin()) {
 			$user_library = $this->user_library();
@@ -465,7 +475,7 @@ class Issue_model extends App_Model
 		return !empty($total) ? $total : 0;
 	}
 
-	public function all_data_pinjam_history($book,$input)
+	public function all_data_pinjam_history($book, $input)
 	{
 		$lib_id = $input['library'];
 		$start = $input['start'];
@@ -500,7 +510,7 @@ class Issue_model extends App_Model
 				return [];
 			}
 		}
-		
+
 		$this->db->where($this->column('deleted_at'), null);
 		$this->db->where($this->column('book'), $book);
 		$this->db->order_by($this->column('id'), 'desc');
@@ -539,6 +549,9 @@ class Issue_model extends App_Model
 		$lib_id = $input['library'];
 		$start = $input['start'];
 		$end = $input['end'];
+		$curLib = $this->library->current_user_library();
+		$this->db->where($this->column('library'), !empty($lib_id) ? $lib_id : $curLib[0]->id);
+		$rate =  $this->db->get(db_prefix() . 'set_peminjaman')->row();
 
 		if ($start && $end) {
 			$this->db->group_start();
@@ -569,7 +582,7 @@ class Issue_model extends App_Model
 				return [];
 			}
 		}
-		
+
 		$this->db->where($this->column('deleted_at'), null);
 		$this->db->order_by($this->column('id'), 'desc');
 		$data = $this->db->get($this->table)->result();
@@ -598,6 +611,13 @@ class Issue_model extends App_Model
 			$data[$key]->issue_date = date_format(date_create($item->issue_date), 'd F Y');
 			$data[$key]->return_date = date_format(date_create($item->return_date), 'd F Y');
 			$data[$key]->expired_date = date_format(date_create($item->expired_date), 'd F Y');
+			$tgl_maksimal = (new DateTime($item->expired_date));
+			$tgl_kembali = (new DateTime($item->return_date));
+			$selisih = $tgl_kembali->diff($tgl_maksimal)->format("%d");
+
+			// $tgl_maksimal = date('Y-m-d', strtotime($item->expired_date));
+			// $data[$key]->denda = date_diff($tgl_kembali, $tgl_maksimal);
+			$data[$key]->denda = $selisih * $rate->denda_hari;
 		}
 		return $data;
 	}
@@ -607,6 +627,10 @@ class Issue_model extends App_Model
 		$lib_id = $this->input->get('library', true);
 		$start = $this->input->get('start', true);
 		$end = $this->input->get('end', true);
+		$curLib = $this->library->current_user_library();
+		echo		$curLib[0]->id . 'lasldas';
+		$this->db->where($this->column('library'), !empty($lib_id) ? $lib_id : $curLib[0]->id);
+		$rate =  $this->db->get(db_prefix() . 'set_peminjaman')->row();
 
 		if ($start && $end) {
 			$this->db->group_start();
@@ -664,9 +688,20 @@ class Issue_model extends App_Model
 			$data[$key]->user_nama = $user_nama;
 			$data[$key]->user_alamat = $user_alamat;
 			// $data[$key]->expired = strtotime($item->expired_date) <= strtotime(date('Y-m-d 00:00:00')) ? true : false;
+			// $data[$key]->denda = date_diff(date_create($item->expired_date), date_create($item->expired_date));
+			// $data[$key]->denda = date_diff($item->return_date, $item->expired_date);
+			$tgl_maksimal = (new DateTime($item->expired_date));
+			$tgl_kembali = (new DateTime($item->return_date));
+			$selisih = $tgl_kembali->diff($tgl_maksimal)->format("%d");
+
+			// $tgl_maksimal = date('Y-m-d', strtotime($item->expired_date));
+			// $data[$key]->denda = date_diff($tgl_kembali, $tgl_maksimal);
+			$data[$key]->denda = $selisih * $rate->denda_hari;
 			$data[$key]->issue_date = date_format(date_create($item->issue_date), 'd F Y');
 			$data[$key]->return_date = date_format(date_create($item->return_date), 'd F Y');
 			$data[$key]->expired_date = date_format(date_create($item->expired_date), 'd F Y');
+			$tgl_kembali = date('Y-m-d', strtotime($item->return_date));
+			// $tgl_maksimal->format('Y-m-d');
 		}
 		return $data;
 	}
@@ -724,7 +759,8 @@ class Issue_model extends App_Model
 		return !empty($total) ? $total : 0;
 	}
 
-	public function total_current_issue(){
+	public function total_current_issue()
+	{
 		$library = $this->input->get('library', true);
 		if (!is_admin()) {
 			$user_library = $this->user_library();
@@ -743,7 +779,8 @@ class Issue_model extends App_Model
 		return !empty($total) ? $total : 0;
 	}
 
-	public function total_current_overdue(){
+	public function total_current_overdue()
+	{
 		$library = $this->input->get('library', true);
 		if (!is_admin()) {
 			$user_library = $this->user_library();
@@ -758,17 +795,18 @@ class Issue_model extends App_Model
 		}
 		$this->db->where($this->column('status'), 'pinjam');
 		$this->db->where($this->column('deleted_at'), null);
-		$total=0;
+		$total = 0;
 		$data = $this->db->get($this->table)->result();
 		foreach ($data as $key => $value) {
-			if(strtotime($value->expired_date) <= strtotime(date('Y-m-d 00:00:00'))){
+			if (strtotime($value->expired_date) <= strtotime(date('Y-m-d 00:00:00'))) {
 				$total++;
 			}
 		}
 		return !empty($total) ? $total : 0;
 	}
 
-	public function total_member_issue(){
+	public function total_member_issue()
+	{
 		$library = $this->input->get('library', true);
 		if (!is_admin()) {
 			$user_library = $this->user_library();
@@ -788,7 +826,8 @@ class Issue_model extends App_Model
 		return !empty($total) ? $total : 0;
 	}
 
-	public function total_member_not_issue(){
+	public function total_member_not_issue()
+	{
 		$library = $this->input->get('library', true);
 		if (!is_admin()) {
 			$user_library = $this->user_library();
@@ -805,24 +844,24 @@ class Issue_model extends App_Model
 		$this->db->where($this->column('deleted_at'), null);
 		$this->db->group_by($this->column('user'));
 		$data = $this->db->get($this->table)->result();
-		$list_user=array();
+		$list_user = array();
 		foreach ($data as $key => $item) {
-			array_push($list_user,$item->user);
+			array_push($list_user, $item->user);
 		}
 		$db_master = $this->load->database('master', true);
-		$user_table= db_master_prefix() . 'master_user';
+		$user_table = db_master_prefix() . 'master_user';
 		$user_prefix = 'user_';
 		if (!is_admin()) {
-			$db_master->where($user_prefix.'sekolahid', current_user('user_sekolahid'));
+			$db_master->where($user_prefix . 'sekolahid', current_user('user_sekolahid'));
 		}
 		if (is_admin() && !empty($library)) {
-			$this->db->where($this->column('id'),$library);
+			$this->db->where($this->column('id'), $library);
 			$data_lib_selected = $this->db->get($this->table_library)->row();
-			if(!empty($data_lib_selected)){
+			if (!empty($data_lib_selected)) {
 				$db_master->where($user_prefix . 'sekolahid', $data_lib_selected->school);
 			}
 		}
-		if(!empty($list_user)){
+		if (!empty($list_user)) {
 			$db_master->where_not_in($user_prefix . 'id', $list_user);
 		}
 		$db_master->where($user_prefix . 'roleid !=', '7');
@@ -832,7 +871,8 @@ class Issue_model extends App_Model
 		return !empty($total) ? $total : 0;
 	}
 
-	public function top_member(){
+	public function top_member()
+	{
 		$library = $this->input->get('library', true);
 		$start = $this->input->get('start', true);
 		$end = $this->input->get('end', true);
@@ -865,17 +905,19 @@ class Issue_model extends App_Model
 		return $data;
 	}
 
-	public function book_top_member($user){
+	public function book_top_member($user)
+	{
 		$db_master = $this->load->database('master', true);
 		$user_table = db_master_prefix() . 'master_user';
 		$user_prefix = 'user_';
 		$db_master->where($user_prefix . 'id', $user);
 		$data = $db_master->get($user_table)->row();
-			$data->detail_kelas=$this->member_kelas($data->user_kelasdetailid);
+		$data->detail_kelas = $this->member_kelas($data->user_kelasdetailid);
 		return $data;
 	}
 
-	public function member_kelas($kelas){
+	public function member_kelas($kelas)
+	{
 		$db_master = $this->load->database('master', true);
 		$user_table = db_master_prefix() . 'master_kelas_detail';
 		$user_prefix = 'kelasdetail_';
@@ -884,7 +926,8 @@ class Issue_model extends App_Model
 		return $data ?? null;
 	}
 
-	public function top_book(){
+	public function top_book()
+	{
 		$library = $this->input->get('library', true);
 		if (!is_admin()) {
 			$user_library = $this->user_library();
@@ -900,18 +943,19 @@ class Issue_model extends App_Model
 		$this->db->select('book,count(book) as total');
 		$this->db->where($this->column('deleted_at'), null);
 		$this->db->group_by($this->column('book'));
-		$this->db->order_by('total','desc');
-		$data=$this->db->get($this->table,10)->result();
+		$this->db->order_by('total', 'desc');
+		$data = $this->db->get($this->table, 10)->result();
 		foreach ($data as $key => $item) {
-			$data[$key]->detail=$this->book_top_data($item->book);
+			$data[$key]->detail = $this->book_top_data($item->book);
 		}
 		return $data;
 	}
 
-	public function book_top_data($book_id){
+	public function book_top_data($book_id)
+	{
 		$this->db->where('id', $book_id);
-		$data=$this->db->get(db_prefix() . 'books')->row();
-		if(empty($data)){
+		$data = $this->db->get(db_prefix() . 'books')->row();
+		if (empty($data)) {
 			return false;
 		}
 		$category_name = '-';
@@ -931,12 +975,13 @@ class Issue_model extends App_Model
 		return $data;
 	}
 
-	public function statistic_dashboard(){
+	public function statistic_dashboard()
+	{
 		$library = $this->input->get('library', true);
 		$year = $this->input->get('year', true);
-		$peminjaman=array();
-		$pengunjung=array();
-		for ($month=1; $month < 13; $month++) {
+		$peminjaman = array();
+		$pengunjung = array();
+		for ($month = 1; $month < 13; $month++) {
 			if (!is_admin()) {
 				$user_library = $this->user_library();
 				if (!empty($user_library)) {
@@ -948,7 +993,7 @@ class Issue_model extends App_Model
 			if (is_admin() && !empty($library)) {
 				$this->db->where($this->column('library'), $library);
 			}
-			if(!empty($year)){
+			if (!empty($year)) {
 				$this->db->where('year(issue_date)', $year);
 			}
 			$this->db->where('month(issue_date)', $month);
@@ -975,14 +1020,14 @@ class Issue_model extends App_Model
 			$this->db->where($this->column('deleted_at'), null);
 			$total_tamu = $this->db->get($this->table_tamu)->num_rows();
 			array_push($pengunjung, !empty($total_tamu) ? $total_tamu : 0);
-
 		}
-		$data['peminjaman']=$peminjaman;
-		$data['pengunjung']=$pengunjung;
+		$data['peminjaman'] = $peminjaman;
+		$data['pengunjung'] = $pengunjung;
 		return $data;
 	}
 
-	public function data_pengunjung(){
+	public function data_pengunjung()
+	{
 		$library = $this->input->get('library', true);
 		$year = $this->input->get('year', true);
 		$db_master = $this->load->database('master', true);
@@ -990,11 +1035,11 @@ class Issue_model extends App_Model
 		$role_prefix = 'role_';
 		$user_table = db_master_prefix() . 'master_user';
 		$user_prefix = 'user_';
-		$db_master->where_not_in($role_prefix.'id',['1','7']);
-		$db_master->order_by($role_prefix.'id','ASC');
-		$list_role=$db_master->get($role_table)->result();
+		$db_master->where_not_in($role_prefix . 'id', ['1', '7']);
+		$db_master->order_by($role_prefix . 'id', 'ASC');
+		$list_role = $db_master->get($role_table)->result();
 		foreach ($list_role as $key => $item) {
-			$arr_user_list=array();
+			$arr_user_list = array();
 			if (!is_admin()) {
 				$db_master->where($user_prefix . 'sekolahid', current_user('user_sekolahid'));
 			}
@@ -1010,11 +1055,11 @@ class Issue_model extends App_Model
 			foreach ($user_lists as $key_user => $user_item) {
 				array_push($arr_user_list, $user_item->user_id);
 			}
-			
+
 			for ($month = 1; $month < 13; $month++) {
-				if(empty($arr_user_list)){
+				if (empty($arr_user_list)) {
 					$list_role[$key]->$month = 0;
-				}else{
+				} else {
 					// get pengunjung
 					if (!is_admin()) {
 						$user_library = $this->user_library();
@@ -1039,20 +1084,18 @@ class Issue_model extends App_Model
 					$totalss_tamu = !empty($total_tamu) ? $total_tamu : 0;
 					$list_role[$key]->$month = $totalss_tamu;
 				}
-				
 			}
 		}
-		$data_guest=array();
-		$data_guest['role_id']='xx';
-		$data_guest['role_name']= 'Non-Member';
+		$data_guest = array();
+		$data_guest['role_id'] = 'xx';
+		$data_guest['role_name'] = 'Non-Member';
 		for ($month = 1; $month < 13; $month++) {
-			
+
 			// get pengunjung
 			if (!is_admin()) {
 				$user_library = $this->user_library();
 				if (!empty($user_library)) {
 					$this->db->where_in($this->column('library'), $user_library);
-					
 				} else {
 					return 0;
 				}
@@ -1070,8 +1113,8 @@ class Issue_model extends App_Model
 			$totalsss_tamu = !empty($total_tamus) ? $total_tamus : 0;
 			$data_guest[$month] = $totalsss_tamu;
 		}
-		$data['internal']=$list_role;
-		$data['external']=$data_guest;
+		$data['internal'] = $list_role;
+		$data['external'] = $data_guest;
 		return $data;
 	}
 }
