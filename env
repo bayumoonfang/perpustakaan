@@ -1,0 +1,31 @@
+#db local connection
+DB_CONNECTION=mysqli
+DB_HOST=localhost
+DB_DATABASE=baktimulya400sch_library
+DB_USERNAME=root
+DB_PASSWORD=
+#DB_USERNAME=baktimulya400sch_library
+#DB_PASSWORD=FSf.SlzW*o$d
+DB_PREFIX="tbl_"
+
+#db master connection
+DB_MASTER_CONNECTION=mysqli
+DB_MASTER_HOST=localhost
+DB_MASTER_DATABASE=master_akademik
+DB_MASTER_USERNAME=root
+DB_MASTER_PASSWORD=
+# DB_MASTER_USERNAME=baktimulya400sch_smartschool
+# DB_MASTER_PASSWORD=N)xxwFR7-W)?
+DB_MASTER_PREFIX=""
+
+# DB_CONNECTION=mysqli
+# DB_HOST=154.26.130.86
+# DB_PORT=3306
+# DB_DATABASE=db_bukakalabs_smartschool
+# DB_USERNAME=db_bukakalabs_smartschool
+# DB_PASSWORD=aBCeExFjf3iccDrb
+
+
+#API CONFIG
+
+API_KEY=NxzrtnF5jXfyjw4GbbPh
