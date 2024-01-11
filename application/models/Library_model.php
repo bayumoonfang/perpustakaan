@@ -154,11 +154,11 @@ class Library_model extends App_Model
 		$this->db->where($this->column('school'), $sekolah_id);
 		$this->db->where($this->column('deleted_at'), null);
 		$this->db->order_by($this->column('library'), 'asc');
-		if (!is_admin()) {
-			$data = $this->db->get($this->table)->result();
-		} else {
-			$data = array("0" => (object)['id' => ' ']);
-		}
+		$data = $this->db->get($this->table)->result();
+		// if (!is_admin()) {
+		// } else {
+		// 	$data = array("0" => (object)['id' => ' ']);
+		// }
 		return $data;
 	}
 

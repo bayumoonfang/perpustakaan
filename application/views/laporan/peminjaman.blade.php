@@ -31,10 +31,38 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-body">
+                            <form action="{{ admin_url('laporan/peminjaman') }}" method="GET">
+                                <div class="row">
 
-                            <div class="row">
-                                <div class="col-auto">
-                                    <form action="{{ admin_url('laporan/peminjaman') }}" method="GET">
+                                    <div class="col-6">
+                                        <button type="button" data-toggle="modal" data-target=".filter"
+                                            class="btn btn-secondary"><i class="fas fa-filter"></i> Filter</button>
+                                    </div>
+                                    <div class="col-6 text-right">
+                                        <input type="text" hidden value="{{ $default_status }}" name="status_excel">
+                                        <input type="text" hidden value="{{ $default_library }}" name="library_excel">
+                                        <input type="date" hidden value="{{ $default_start }}" name="start_excel">
+                                        <input type="date" hidden value="{{ $default_end }}" name="end_excel">
+                                        <input type="text" value="Cetak" hidden value="{{ $default_end }}"
+                                            name="cetak">
+
+                                        {{-- <div class="col-6"> --}}
+
+                                        <button type="submit" class="btn btn-warning ml-2"><i
+                                                class="fas fa-print mr-2"></i>Cetak</button>
+                                        <button type="button" id="cetak-persiswa" class="btn btn-warning ml-2"
+                                            style="display: none;" data-toggle="modal" data-target=".cetak-per-siswa"><i
+                                                class="uil-import mr-2"></i>Cetak</button>
+                                        {{-- </div> --}}
+                                        {{-- <div class="col-6">
+                                            <input name="cetak" value="Cetak" type="submit"
+                                                class="btn btn-warning btn-block " />
+                                        </div> --}}
+                                    </div>
+                                </div>
+                                <br>
+                                {{-- <div class="row">
+                                    <div class="col-auto">
                                         <div class="row">
                                             <div class="col-auto">
                                                 <div class="form-group">
@@ -80,9 +108,9 @@
                                                 </div>
                                             </div>
                                         </div>
-                                    </form>
-                                </div>
-                            </div>
+                                    </div>
+                                </div> --}}
+                            </form>
                             <hr />
                             {{-- <div class="col-12 text-right mb-4">
                             <a href='{{admin_url("laporan/peminjaman/cetak")}}' class="btn btn-success ml-2">Cetak</a>
@@ -149,6 +177,90 @@
                 </div> <!-- end col -->
             </div> <!-- end row -->
         </div> <!-- container-fluid -->
+
+        <div class="modal fade filter" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title mt-0" id="myLargeModalLabel">Filter</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form action="{{ admin_url('laporan/peminjaman') }}" method="GET" id="filterForm">
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label>Perpustakaan</label>
+                                <select name='library' required class=" form-control">
+                                    <option value="" selected disabled>Pilih Perpustakaan</option>
+                                    @foreach ($library as $item)
+                                        <option value="{{ $item->id }}"
+                                            {{ $default_library && $default_library == $item->id ? 'selected' : '' }}>
+                                            {{ ucfirst($item->library) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <!-- <div class="form-group">
+                                                                                                                                                    <label>Tahun Pelajaran</label>
+                                                                                                                                                    <select name="tahunPelajaran" id="pilihTahunPelajaran" class="select2 form-control" style="width: 100%;">
+                                                                                                                                                        <option value="2025-2026">2025-2026</option>
+                                                                                                                                                        <option value="2024-2025">2024-2025</option>
+                                                                                                                                                        <option value="2023-2024">2023-2024</option>
+                                                                                                                                                    </select>
+                                                                                                                                                </div>
+                                                                                                                                                <div class="form-group">
+                                                                                                                                                    <label>Semester</label>
+                                                                                                                                                    <select name="kelas" id="pilihSemester" class="select2 form-control" style="width: 100%;">
+                                                                                                                                                        <option value="1">1</option>
+                                                                                                                                                        <option value="2">2</option>
+                                                                                                                                                        <option value="3">3</option>
+                                                                                                                                                        <option value="4">4</option>
+                                                                                                                                                        <option value="5">5</option>
+                                                                                                                                                        <option value="6">6</option>
+                                                                                                                                                    </select>
+                                                                                                                                                </div> -->
+                            <div class="form-group">
+                                <label>Jenis Anggota</label>
+                                <select name="kelas" id="" class="select2 form-control" style="width: 100%;">
+                                    <option value="semua">Semua</option>
+                                    <option value="siswa">Siswa</option>
+                                    <option value="guru">Guru</option>
+                                    <option value="guest">Guest</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Status</label>
+                                <select name="status" id="" class="select2 form-control" style="width: 100%;">
+                                    <option value="">Semua</option>
+                                    <option value="kembali" {{ $default_status == 'kembali' ? 'selected' : '' }}>Kembali
+                                    </option>
+                                    <option value="pinjam" {{ $default_status == 'pinjam' ? 'selected' : '' }}>Dipinjam
+                                    </option>
+                                    <option value="rusak" {{ $default_status == 'rusak' ? 'selected' : '' }}>Rusak
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Tanggal Awal</label>
+                                <input class="form-control" type="date" name="start" value="{{ $default_start }}">
+                            </div>
+                            <div class="form-group">
+                                <label>Tanggal Akhir</label>
+                                <input class="form-control" name="end" type="date" value="{{ $default_end }}">
+                            </div>
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-danger btn-soft-danger waves-effect waves-light"
+                                id="resetFilterButton" data-dismiss="modal" aria-label="Close"><i
+                                    class="fas fa-sync mr-2"></i>Reset Filter</button>
+                            <button type="submit" class="btn btn-primary waves-effect waves-light" id="filterButton"
+                                aria-label="Close"><i class="fas fa-filter mr-2"></i>Filter</button>
+                        </div>
+                    </form>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
     </div>
     <!-- End Page-content -->
 @endsection

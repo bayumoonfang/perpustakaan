@@ -320,18 +320,31 @@ class Kategori_buku_model extends App_Model
 
 	public function data_kategori_laporan($number = 10, $offset = 0, $search = null, $role = null, $sekolah = null)
 	{
-		if (!is_admin()) {
-			$user_library = $this->user_library();
-			if (!empty($user_library)) {
-				$this->db->where_in($this->column('library'), $user_library);
-			} else {
-				return array();
-			}
-		}
-		if (!empty($search)) {
+		$lib_id = $this->input->get('library', true);
+		// if (!is_admin()) {
+		// 	$user_library = $this->user_library();
+		// 	if (!empty($user_library)) {
+		// 		$this->db->where($this->column('library'), $lib_id);
+		// 		// $this->db->where_in($this->column('library'), $user_library);
+		// 	} else {
+		// 		// return array();
+		// 		$this->db->where($this->column('library'), $lib_id);
+		// 	}
+		// }
+		if ($lib_id) {
 			$this->db->group_start();
-			$this->db->like($this->column('category'), $search);
+			$this->db->where($this->column('library'), $lib_id);
 			$this->db->group_end();
+		} else {
+			// $this->user_libs();
+			if (!is_admin()) {
+				$user_library = $this->user_library();
+				if (!empty($user_library)) {
+					$this->db->where_in($this->column('library'), $user_library);
+				} else {
+					return array();
+				}
+			}
 		}
 		$this->db->where($this->column('deleted_at'), null);
 		$this->db->order_by($this->column('id'), 'desc');
@@ -355,12 +368,30 @@ class Kategori_buku_model extends App_Model
 
 	public function export_laporan_kategori_buku()
 	{
-		if (!is_admin()) {
-			$user_library = $this->user_library();
-			if (!empty($user_library)) {
-				$this->db->where_in($this->column('library'), $user_library);
-			} else {
-				return array();
+		$lib_id = $this->input->get('library_excel', true);
+		// if (!is_admin()) {
+		// 	$user_library = $this->user_library();
+		// 	if (!empty($user_library)) {
+		// 		$this->db->where($this->column('library'), $lib_id);
+		// 		// $this->db->where_in($this->column('library'), $user_library);
+		// 	} else {
+		// 		// return array();
+		// 		$this->db->where($this->column('library'), $lib_id);
+		// 	}
+		// }
+		if ($lib_id) {
+			$this->db->group_start();
+			$this->db->where($this->column('library'), $lib_id);
+			$this->db->group_end();
+		} else {
+			// $this->user_libs();
+			if (!is_admin()) {
+				$user_library = $this->user_library();
+				if (!empty($user_library)) {
+					$this->db->where_in($this->column('library'), $user_library);
+				} else {
+					return array();
+				}
 			}
 		}
 		if (!empty($search)) {

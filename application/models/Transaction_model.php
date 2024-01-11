@@ -20,7 +20,8 @@ class Transaction_model extends App_Model
 		$this->db = $this->load->database('default', true);
 	}
 
-	public function total_data($type='in',$search = null,$library=null){
+	public function total_data($type = 'in', $search = null, $library = null)
+	{
 		if (!is_admin()) {
 			$user_library = $this->user_library();
 			if (!empty($user_library)) {
@@ -49,10 +50,11 @@ class Transaction_model extends App_Model
 		$this->db->where($this->column('type'), $type);
 		$this->db->where($this->column('deleted_at'), null);
 		$total = $this->db->get($this->table)->num_rows();
-		return !empty($total) ? $total:0;
+		return !empty($total) ? $total : 0;
 	}
 
-	public function data($type='in',$number = 10, $offset = 0, $search = null,$library=null){
+	public function data($type = 'in', $number = 10, $offset = 0, $search = null, $library = null)
+	{
 		if (!is_admin()) {
 			$user_library = $this->user_library();
 			if (!empty($user_library)) {
@@ -96,15 +98,15 @@ class Transaction_model extends App_Model
 			if ($library_data) {
 				$library_name = $library_data->library;
 			}
-			if($type=='in'){
-				$jenis_penambahan=$this->jenis_penambahan($item->category);
-				if($jenis_penambahan){
-					$category_name=ucfirst($jenis_penambahan->title);
+			if ($type == 'in') {
+				$jenis_penambahan = $this->jenis_penambahan($item->category);
+				if ($jenis_penambahan) {
+					$category_name = ucfirst($jenis_penambahan->title);
 				}
-			}elseif($type=='out'){
-				$jenis_pengurangan=$this->jenis_pengurangan($item->category);
-				if($jenis_pengurangan){
-					$category_name=ucfirst($jenis_pengurangan->title);
+			} elseif ($type == 'out') {
+				$jenis_pengurangan = $this->jenis_pengurangan($item->category);
+				if ($jenis_pengurangan) {
+					$category_name = ucfirst($jenis_pengurangan->title);
 				}
 			}
 
@@ -128,7 +130,8 @@ class Transaction_model extends App_Model
 		return $data;
 	}
 
-	public function get_data($type='in',$value=null,$column='id'){
+	public function get_data($type = 'in', $value = null, $column = 'id')
+	{
 		$this->db->where($column, $value);
 		if (!is_admin()) {
 			$user_library = $this->user_library();
@@ -185,15 +188,16 @@ class Transaction_model extends App_Model
 		return $result;
 	}
 
-	public function add($type='in'){
+	public function add($type = 'in')
+	{
 		$input = $this->input->post(NULL, TRUE);
 		$data = [
 			'library' => $input['library'],
 			'book' => $input['book'],
 			'category' => $input['category'],
 			'qty' => $input['qty'],
-			'notes' => isset($input['notes']) && $input['notes']!='' ? $input['notes']:null,
-			'reff' => isset($input['reff']) ? $input['reff']:null,
+			'notes' => isset($input['notes']) && $input['notes'] != '' ? $input['notes'] : null,
+			'reff' => isset($input['reff']) ? $input['reff'] : null,
 			'type' => $type,
 			'date' =>  $input['date'],
 			'created_at' => now(),
@@ -206,7 +210,8 @@ class Transaction_model extends App_Model
 		return $this->db->insert_id();
 	}
 
-	public function proses_kembali($data){
+	public function proses_kembali($data)
+	{
 		$data = [
 			'library' => $data['library'],
 			'book' => $data['book'],
@@ -226,11 +231,12 @@ class Transaction_model extends App_Model
 		return $this->db->insert_id();
 	}
 
-	public function update($type='in',$id=null){
+	public function update($type = 'in', $id = null)
+	{
 		$this->db->where('type', $type);
 		$this->db->where('id', $id);
 		$data_old = $this->db->get($this->table)->row();
-		if(!$data_old){
+		if (!$data_old) {
 			return false;
 		}
 
@@ -240,7 +246,7 @@ class Transaction_model extends App_Model
 			'book' => $input['book'],
 			'category' => $input['category'],
 			'qty' => $input['qty'],
-			'notes' => isset($input['notes']) && $input['notes']!='' ? $input['notes'] : null,
+			'notes' => isset($input['notes']) && $input['notes'] != '' ? $input['notes'] : null,
 			'reff' => isset($input['reff']) ? $input['reff'] : null,
 			'type' => $type,
 			'date' =>  $input['date'],
@@ -249,23 +255,23 @@ class Transaction_model extends App_Model
 		];
 		$this->db->where('type', $type);
 		$this->db->where('id', $id);
-		$data_update = $this->db->update($this->table,$data);
-		if((intval($data_old->qty) != intval($input['qty'])) || ($data_old->book !=$input['book'])){
-			$type_rev=null;
-			if($type=='in'){
+		$data_update = $this->db->update($this->table, $data);
+		if ((intval($data_old->qty) != intval($input['qty'])) || ($data_old->book != $input['book'])) {
+			$type_rev = null;
+			if ($type == 'in') {
 				$type_rev = 'out';
-			}elseif($type == 'out'){
+			} elseif ($type == 'out') {
 				$type_rev = 'in';
 			}
-			$rev_qty=$this->update_book_qty($data_old->book, $data_old->qty, $type_rev);
-			if($rev_qty){
+			$rev_qty = $this->update_book_qty($data_old->book, $data_old->qty, $type_rev);
+			if ($rev_qty) {
 				$this->update_book_qty($input['book'], $input['qty'], $type);
 			}
 		}
 		return true;
 	}
 
-	public function delete($type = 'in', $id=null)
+	public function delete($type = 'in', $id = null)
 	{
 		$this->db->where('type', $type);
 		$this->db->where('id', $id);
@@ -283,71 +289,75 @@ class Transaction_model extends App_Model
 		$this->db->where('type', $type);
 		$this->db->where('id', $id);
 		$this->db->update($this->table, $data);
-		$type_rev=null;
-		if($type=='in'){
+		$type_rev = null;
+		if ($type == 'in') {
 			$type_rev = 'out';
-		}elseif($type == 'out'){
+		} elseif ($type == 'out') {
 			$type_rev = 'in';
 		}
-		$this->update_book_qty($data_delete->book,$data_delete->qty, $type_rev);
+		$this->update_book_qty($data_delete->book, $data_delete->qty, $type_rev);
 		return true;
 	}
 
-	public function update_book_qty($book,$qty,$type){
+	public function update_book_qty($book, $qty, $type)
+	{
 
-		$qty_update=$qty;
-		if($type=='in'){
-			$qty_update=intval($qty) * (1);
-		}elseif($type=='out'){
+		$qty_update = $qty;
+		if ($type == 'in') {
+			$qty_update = intval($qty) * (1);
+		} elseif ($type == 'out') {
 			$qty_update = intval($qty) * (-1);
-		}else{
+		} else {
 			return false;
 		}
 		$this->db->where($this->column('id'), $book);
 		$data_book = $this->db->get(db_prefix() . 'books')->row();
-		if(!$data_book){
+		if (!$data_book) {
 			return false;
 		}
-		$qty_update= $qty_update + $data_book->qty;
+		$qty_update = $qty_update + $data_book->qty;
 
 		$data = [
 			'qty' => $qty_update,
 		];
 		$this->db->where($this->column('id'), $book);
-		$this->db->update(db_prefix() .'books', $data);
+		$this->db->update(db_prefix() . 'books', $data);
 		return true;
 	}
 
-	public function jenis_penambahan($id){
-		$table_penambahan=db_prefix() . 'additions';
-		$this->db->where($this->column('id'),$id);
+	public function jenis_penambahan($id)
+	{
+		$table_penambahan = db_prefix() . 'additions';
+		$this->db->where($this->column('id'), $id);
 		$data = $this->db->get($table_penambahan)->row();
-		if(!$data){
+		if (!$data) {
 			return false;
 		}
 		return $data;
 	}
 
-	public function jenis_pengurangan($id){
-		$table_pengurangan=db_prefix() . 'substractions';
-		$this->db->where($this->column('id'),$id);
+	public function jenis_pengurangan($id)
+	{
+		$table_pengurangan = db_prefix() . 'substractions';
+		$this->db->where($this->column('id'), $id);
 		$data = $this->db->get($table_pengurangan)->row();
-		if(!$data){
+		if (!$data) {
 			return false;
 		}
 		return $data;
 	}
 
-	public function total_keluar_dashboard($start_date,$end_date,$all=true){
+	public function total_keluar_dashboard($start_date, $end_date, $all = true)
+	{
 		$library = $this->input->get('library', true);
 		if (is_admin() && !empty($library)) {
 			$this->db->where($this->column('library'), $library);
 		}
-		if(!$all){
+		if (!$all) {
 			$this->db->where($this->column('date') . '>=', $start_date);
 			$this->db->where($this->column('date') . '<=', $end_date);
 		}
-		
+
 		if (!is_admin()) {
 			$user_library = $this->user_library();
 			if (!empty($user_library)) {
@@ -357,12 +367,12 @@ class Transaction_model extends App_Model
 			}
 		}
 		$this->db->where($this->column('type'), 'out');
-		$this->db->where($this->column('reff').'!=',null );
+		$this->db->where($this->column('reff') . '!=', null);
 		$this->db->where($this->column('deleted_at'), null);
 		$data = $this->db->get($this->table)->result();
-		$total=0;
+		$total = 0;
 		foreach ($data as $value) {
-			$total=$total+$value->qty;
+			$total = $total + $value->qty;
 		}
 		return $total;
 	}
@@ -407,6 +417,8 @@ class Transaction_model extends App_Model
 	public function data_report($number = 10, $offset = 0, $search = null)
 	{
 		$lib_id = $this->input->get('library', true);
+		$jenis = $this->input->get('jenis', true);
+		$kategori = $this->input->get('kategori', true);
 		$start = $this->input->get('start', true);
 		$end = $this->input->get('end', true);
 
@@ -416,6 +428,11 @@ class Transaction_model extends App_Model
 			$this->db->where($this->column('date') . '>=', $start);
 			$this->db->group_end();
 		}
+		if ($kategori) {
+			$this->db->group_start();
+			$this->db->where($this->column('type'), $kategori);
+			$this->db->group_end();
+		}
 		if ($lib_id) {
 			$this->db->group_start();
 			$this->db->where($this->column('library'), $lib_id);
@@ -423,7 +440,7 @@ class Transaction_model extends App_Model
 		} else {
 			$this->user_libs();
 		}
-		
+
 		if (!empty($search)) {
 			$search_book = $this->search_book($search);
 			if (!empty($search_book)) {
@@ -489,14 +506,24 @@ class Transaction_model extends App_Model
 
 	public function export_transaction($input)
 	{
-		$lib_id = $input['library'];
-		$start = $input['start'];
-		$end = $input['end'];
+		// $lib_id = $input['library'];
+		// $start = $input['start'];
+		// $end = $input['end'];
+		$lib_id = $this->input->get('library_excel', true);
+		$jenis = $this->input->get('jenis_excel', true);
+		$kategori = $this->input->get('kategori_excel', true);
+		$start = $this->input->get('start_excel', true);
+		$end = $this->input->get('end_excel', true);
 
 		if ($start && $end) {
 			$this->db->group_start();
 			$this->db->where($this->column('date') . '<=', $end);
 			$this->db->where($this->column('date') . '>=', $start);
+			$this->db->group_end();
+		}
+		if ($kategori) {
+			$this->db->group_start();
+			$this->db->where($this->column('type'), $kategori);
 			$this->db->group_end();
 		}
 		if ($lib_id) {

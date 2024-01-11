@@ -33,36 +33,66 @@
                         <div class="card-body">
                             @if (user_can('laporan pengunjung'))
                                 <div class="row">
-                                    <div class="col-6"></div>
-                                    <div class="col-6 text-right">
-                                        <form action="{{ site_url('buku-tamu') }}" target="_blank">
-                                            <div class="row">
-                                                <div class="col-8">
-                                                    <div class="form-group">
-                                                        <select name='library' required class=" form-control">
-                                                            <option value="" selected disabled>Pilih Perpustakaan
-                                                            </option>
-                                                            @foreach ($library as $item)
-                                                                <option value="{{ $item->enc }}">
-                                                                    {{ ucfirst($item->library) }}</option>
-                                                            @endforeach
-                                                        </select>
-                                                        @if (get_error('library'))
-                                                            <div class="invalid-feedback">{{ get_error('library') }}</div>
-                                                        @endif
+                                    <div class="col-4"><button type="button" data-toggle="modal" data-target=".filter"
+                                            class="btn btn-secondary"><i class="fas fa-filter"></i> Filter</button></div>
+                                    <div class="col-8 d-flex justify-content-end">
+                                        <div class="row">
+                                            <form action="{{ site_url('buku-tamu') }}" target="_blank">
+                                                <div class="row mr-2">
+                                                    <div class="col-8">
+                                                        <div class="form-group">
+                                                            <select name='library' required class=" form-control">
+                                                                <option value="" selected disabled>Pilih Perpustakaan
+                                                                </option>
+                                                                @foreach ($library as $item)
+                                                                    <option value="{{ $item->enc }}">
+                                                                        {{ ucfirst($item->library) }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                            @if (get_error('library'))
+                                                                <div class="invalid-feedback">{{ get_error('library') }}
+                                                                </div>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <input type="submit" name="Buku Tamu" value="Buku Tamu"
+                                                            style="width:100%" class="btn btn-primary btn-block ml-2">
+
                                                     </div>
                                                 </div>
-                                                <div class="col-4">
-                                                    <input type="submit" name="Buku Tamu" value="Buku Tamu"
-                                                        style="width:100%" class="btn btn-primary btn-block ml-2">
+                                            </form>
+                                            <form action="{{ admin_url('laporan/pengunjung') }}" method="GET">
+
+                                                <div class="text-right">
+                                                    <input type="text" hidden value="{{ $default_status }}"
+                                                        name="status_excel">
+                                                    <input type="text" hidden value="{{ $default_library }}"
+                                                        name="library_excel">
+                                                    <input type="date" hidden value="{{ $default_start }}"
+                                                        name="start_excel">
+                                                    <input type="date" hidden value="{{ $default_end }}"
+                                                        name="end_excel">
+                                                    <input type="text" value="Cetak" hidden value="{{ $default_end }}"
+                                                        name="cetak">
+
+                                                    {{-- <div class="col-6"> --}}
+
+                                                    <button type="submit" class="btn btn-warning ml-2"><i
+                                                            class="fas fa-print mr-2"></i>Cetak</button>
+                                                    <button type="button" id="cetak-persiswa" class="btn btn-warning ml-2"
+                                                        style="display: none;" data-toggle="modal"
+                                                        data-target=".cetak-per-siswa"><i
+                                                            class="uil-import mr-2"></i>Cetak</button>
 
                                                 </div>
-                                            </div>
-                                        </form>
+
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
                                 <hr />
-                                <div class="row">
+                                {{-- <div class="row">
                                     <div class="col-auto">
                                         <form action="{{ admin_url('laporan/pengunjung') }}" method="GET">
                                             <div class="row">
@@ -131,10 +161,10 @@
                                             </div>
                                         </form>
                                     </div>
-                                </div>
+                                </div> --}}
                             @endif
                             {{ show_status() }}
-                            @if (in_array($default_jenis_laporan, [' ', 0]))
+                            @if (in_array($default_jenis_laporan, [' ', 0, 1]))
                                 <div class="table-responsive">
                                     <table class="table table-striped table-hover table-bordered dt-responsive nowrap"
                                         style="border-collapse: collapse; border-spacing: 0; width: 100%;">
@@ -232,6 +262,91 @@
                 </div> <!-- end col -->
             </div> <!-- end row -->
         </div> <!-- container-fluid -->
+
+        {{-- Modal --}}
+        <div class="modal fade filter" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title mt-0" id="myLargeModalLabel">Filter</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form action="{{ admin_url('laporan/pengunjung') }}" method="GET">
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label>Perpustakaan</label>
+                                <select name='library' required class=" form-control">
+                                    <option value="" selected disabled>Pilih Perpustakaan</option>
+                                    @foreach ($library as $item)
+                                        <option value="{{ $item->id }}"
+                                            {{ $default_library && $default_library == $item->id ? 'selected' : '' }}>
+                                            {{ ucfirst($item->library) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <!-- <div class="form-group">
+                                                                                                                                                                                                                                        <label>Tahun Pelajaran</label>
+                                                                                                                                                                                                                                        <select name="tahunPelajaran" id="pilihTahunPelajaran" class="select2 form-control" style="width: 100%;">
+                                                                                                                                                                                                                                            <option value="2025-2026">2025-2026</option>
+                                                                                                                                                                                                                                            <option value="2024-2025">2024-2025</option>
+                                                                                                                                                                                                                                            <option value="2023-2024">2023-2024</option>
+                                                                                                                                                                                                                                        </select>
+                                                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                                                    <div class="form-group">
+                                                                                                                                                                                                                                        <label>Semester</label>
+                                                                                                                                                                                                                                        <select name="kelas" id="pilihSemester" class="select2 form-control" style="width: 100%;">
+                                                                                                                                                                                                                                            <option value="1">1</option>
+                                                                                                                                                                                                                                            <option value="2">2</option>
+                                                                                                                                                                                                                                            <option value="3">3</option>
+                                                                                                                                                                                                                                            <option value="4">4</option>
+                                                                                                                                                                                                                                            <option value="5">5</option>
+                                                                                                                                                                                                                                            <option value="6">6</option>
+                                                                                                                                                                                                                                        </select>
+                                                                                                                                                                                                                                    </div> -->
+                            <div class="form-group">
+                                <label>Status</label>
+                                <select name="jenis" id="" class="select2 form-control" style="width: 100%;">
+                                    <option value="1"
+                                        {{ $default_jenis_laporan && $default_jenis_laporan == 1 ? 'selected' : '' }}>
+                                        Semua</option>
+                                    <option value="2"
+                                        {{ $default_jenis_laporan && $default_jenis_laporan == 2 ? 'selected' : '' }}>
+                                        Per Anggota</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Jenis Anggota</label>
+                                <select name="status" id="" class="select2 form-control" style="width: 100%;">
+                                    <option value="">Semua</option>
+                                    <option value="6" {{ $default_status == '6' ? 'selected' : '' }}>Siswa</option>
+                                    <option value="5" {{ $default_status == '5' ? 'selected' : '' }}>Guru</option>
+                                    <option value="1" {{ $default_status == '1' ? 'selected' : '' }}>Guest</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Tanggal Awal</label>
+                                <input class="form-control" type="date" name="start" value="{{ $default_start }}">
+                            </div>
+                            <div class="form-group">
+                                <label>Tanggal Akhir</label>
+                                <input class="form-control" name="end" type="date" value="{{ $default_end }}">
+                            </div>
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-danger btn-soft-danger waves-effect waves-light"
+                                id="resetFilterButton" data-dismiss="modal" aria-label="Close"><i
+                                    class="fas fa-sync mr-2"></i>Reset Filter</button>
+                            <button type="submit" class="btn btn-primary waves-effect waves-light" id="filterButton"
+                                aria-label="Close"><i class="fas fa-filter mr-2"></i>Filter</button>
+                        </div>
+                    </form>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
     </div>
     <!-- End Page-content -->
 @endsection

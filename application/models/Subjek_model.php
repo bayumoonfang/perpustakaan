@@ -180,12 +180,30 @@ class Subjek_model extends App_Model
 
 	public function data_subjek_laporan($number = 10, $offset = 0, $search = null, $role = null, $sekolah = null)
 	{
-		if (!is_admin()) {
-			$user_library = $this->user_library();
-			if (!empty($user_library)) {
-				$this->db->where_in($this->column('library'), $user_library);
-			} else {
-				return array();
+		$lib_id = $this->input->get('library', true);
+		// if (!is_admin()) {
+		// 	$user_library = $this->user_library();
+		// 	if (!empty($user_library)) {
+		// 		$this->db->where($this->column('library'), $lib_id);
+		// 		// $this->db->where_in($this->column('library'), $user_library);
+		// 	} else {
+		// 		// return array();
+		// 		$this->db->where($this->column('library'), $lib_id);
+		// 	}
+		// }
+		if ($lib_id) {
+			$this->db->group_start();
+			$this->db->where($this->column('library'), $lib_id);
+			$this->db->group_end();
+		} else {
+			// $this->user_libs();
+			if (!is_admin()) {
+				$user_library = $this->user_library();
+				if (!empty($user_library)) {
+					$this->db->where_in($this->column('library'), $user_library);
+				} else {
+					return array();
+				}
 			}
 		}
 		if (!empty($search)) {
@@ -196,6 +214,59 @@ class Subjek_model extends App_Model
 		$this->db->where($this->column('deleted_at'), null);
 		$this->db->order_by($this->column('id'), 'desc');
 		$data = $this->db->get($this->table, $number, $offset)->result();
+		foreach ($data as $key => $item) {
+			$library_name = '-';
+			$library_name = '-';
+			$this->db->where($this->column('id'), $item->library);
+			$libData = $this->db->get(db_prefix() . 'libraries')->row();
+			if (!empty($libData)) {
+				$library_name = ucfirst($libData->library);
+			};
+			$data[$key]->library_name = $library_name;
+			$book_issued = $this->jumlah_pinjam($item->id);
+			$book_viewed = $this->view_by_book($item->id);
+			$data[$key]->pinjam = $book_issued;
+			$data[$key]->baca = $book_viewed;
+		}
+		return $data;
+	}
+
+	public function export_laporan_subjek_buku()
+	{
+		$lib_id = $this->input->get('library_excel', true);
+		// if (!is_admin()) {
+		// 	$user_library = $this->user_library();
+		// 	if (!empty($user_library)) {
+		// 		$this->db->where($this->column('library'), $lib_id);
+		// 		// $this->db->where_in($this->column('library'), $user_library);
+		// 	} else {
+		// 		// return array();
+		// 		$this->db->where($this->column('library'), $lib_id);
+		// 	}
+		// }
+		if ($lib_id) {
+			$this->db->group_start();
+			$this->db->where($this->column('library'), $lib_id);
+			$this->db->group_end();
+		} else {
+			// $this->user_libs();
+			if (!is_admin()) {
+				$user_library = $this->user_library();
+				if (!empty($user_library)) {
+					$this->db->where_in($this->column('library'), $user_library);
+				} else {
+					return array();
+				}
+			}
+		}
+		// if (!empty($search)) {
+		// 	$this->db->group_start();
+		// 	$this->db->like($this->column('name'), $search);
+		// 	$this->db->group_end();
+		// }
+		$this->db->where($this->column('deleted_at'), null);
+		$this->db->order_by($this->column('id'), 'desc');
+		$data = $this->db->get($this->table)->result();
 		foreach ($data as $key => $item) {
 			$library_name = '-';
 			$library_name = '-';

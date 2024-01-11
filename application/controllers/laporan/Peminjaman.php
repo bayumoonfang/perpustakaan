@@ -38,6 +38,7 @@ class Peminjaman extends Admin_Controller
 		$data['default_library'] = $curLib[0]->id;
 		$data['default_start'] = $this->input->get('start', true);
 		$data['default_end'] = $this->input->get('end', true);
+		$data['default_status'] = $this->input->get('status', true);
 		$data['library'] = $libs;
 
 		return view('laporan.peminjaman', $data);

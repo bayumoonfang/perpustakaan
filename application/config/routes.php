@@ -102,6 +102,8 @@ $route[$admin . '/buku-barcode-print'] = 'panel/book/book_barcode_print';
 $route[$admin . '/buku-barcode-detail/(:num)/library/(:num)'] = 'panel/book/book_barcode_list/$1/$2';
 $route[$admin . '/buku-barcode/(:num)/library/(:num)'] = 'panel/book/book_barcode/$1/$2';
 $route[$admin . '/buku/export_excel'] = 'panel/book/export_excel_buku';
+$route[$admin . '/buku/template_excel'] = 'panel/book/template_excel_buku';
+$route[$admin . '/buku/import_excel'] = 'panel/book/import_excel_buku';
 
 //route kategori-buku
 $route[$admin . '/kategori-buku'] = 'panel/book/index_kategori';

@@ -917,12 +917,28 @@ class Buku_model extends App_Model
 
 	public function history_buku($number = 10, $offset = 0, $search = null, $sekolah = null)
 	{
-		if (!is_admin()) {
-			$user_library = $this->user_library();
-			if (!empty($user_library)) {
-				$this->db->where_in($this->column('library'), $user_library);
-			} else {
-				return array();
+		$lib_id = $this->input->get('library', true);
+		// if (!is_admin()) {
+		// 	$user_library = $this->user_library();
+		// 	if (!empty($user_library)) {
+		// 		$this->db->where_in($this->column('library'), $user_library);
+		// 	} else {
+		// 		return array();
+		// 	}
+		// }
+		if ($lib_id) {
+			$this->db->group_start();
+			$this->db->where($this->column('library'), $lib_id);
+			$this->db->group_end();
+		} else {
+			// $this->user_libs();
+			if (!is_admin()) {
+				$user_library = $this->user_library();
+				if (!empty($user_library)) {
+					$this->db->where_in($this->column('library'), $user_library);
+				} else {
+					return array();
+				}
 			}
 		}
 		if (!empty($search)) {
@@ -1005,12 +1021,38 @@ class Buku_model extends App_Model
 
 	public function all_data_history()
 	{
-		if (!is_admin()) {
-			$user_library = $this->user_library();
-			if (!empty($user_library)) {
-				$this->db->where_in($this->column('library'), $user_library);
-			} else {
-				return array();
+		// if (!is_admin()) {
+		// 	$user_library = $this->user_library();
+		// 	if (!empty($user_library)) {
+		// 		$this->db->where_in($this->column('library'), $user_library);
+		// 	} else {
+		// 		return array();
+		// 	}
+		// }
+		$lib_id = $this->input->get('library_excel', true);
+		// if (!is_admin()) {
+		// 	$user_library = $this->user_library();
+		// 	if (!empty($user_library)) {
+		// 		$this->db->where($this->column('library'), $lib_id);
+		// 		// $this->db->where_in($this->column('library'), $user_library);
+		// 	} else {
+		// 		// return array();
+		// 		$this->db->where($this->column('library'), $lib_id);
+		// 	}
+		// }
+		if ($lib_id) {
+			$this->db->group_start();
+			$this->db->where($this->column('library'), $lib_id);
+			$this->db->group_end();
+		} else {
+			// $this->user_libs();
+			if (!is_admin()) {
+				$user_library = $this->user_library();
+				if (!empty($user_library)) {
+					$this->db->where_in($this->column('library'), $user_library);
+				} else {
+					return array();
+				}
 			}
 		}
 		if (!empty($search)) {
@@ -1165,6 +1207,61 @@ class Buku_model extends App_Model
 		// 	$data[$key]->pinjam = $book_issued;
 		// 	$data[$key]->baca = $book_viewed;
 		// }
+		return $data;
+	}
+
+	//Template impor buku
+	public function template_excel_master_buku()
+	{
+		if (!is_admin()) {
+			$user_library = $this->user_library();
+			if (!empty($user_library)) {
+				$this->db->where_in($this->column('library'), $user_library);
+			} else {
+				return array();
+			}
+		}
+		$get_select_bentuk = $this->input->get('select_bentuk', true);
+		if (!empty($get_select_bentuk)) {
+			$where = array();
+			foreach ($get_select_bentuk as $line) {
+				array_push($where, $line);
+			}
+			$this->db->where_in('bentuk', $where);
+		}
+		$get_select_kategori = $this->input->get('select_kategori', true);
+		if (!empty($get_select_kategori)) {
+			$where = array();
+			foreach ($get_select_kategori as $line) {
+				array_push($where, $line);
+			}
+			$this->db->where_in('category', $where);
+		}
+		if (!empty($search)) {
+			$this->db->group_start();
+			$this->db->like($this->column('category'), $search);
+			$this->db->group_end();
+		}
+		$this->db->where($this->column('deleted_at'), null);
+		$this->db->order_by($this->column('id'), 'desc');
+		$this->db->limit(1);
+		$data = $this->db->get($this->table)->result();
+		foreach ($data as $key => $item) {
+			$library_name = '-';
+			$library_name = '-';
+			$this->db->where($this->column('id'), $item->library);
+			$libData = $this->db->get(db_prefix() . 'libraries')->row();
+			if (!empty($libData)) {
+				$library_name = ucfirst($libData->library);
+			};
+			$this->db->where($this->column('id'), $item->language);
+			$langData = $this->db->get(db_prefix() . 'bahasa')->row();
+			if (!empty($langData)) {
+				$language_name = ucfirst($langData->name);
+			};
+			$data[$key]->library_name = $library_name;
+			$data[$key]->bahasa_name = $language_name;
+		}
 		return $data;
 	}
 

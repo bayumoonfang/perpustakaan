@@ -980,30 +980,81 @@ class Book extends Admin_Controller
 		// 	$col++;
 		// }
 		// Buat header tabel nya pada baris ke 3
-		$sheet->setCellValue('A3', "Judul"); // Set kolom A3 dengan tulisan "NO"
-		$sheet->setCellValue('B3', "Bentuk"); // Set kolom B3 dengan tulisan "NIS"
-		$sheet->setCellValue('C3', "ISBN"); // Set kolom D3 dengan tulisan "JENIS KELAMIN"
-		$sheet->setCellValue('D3', "Penerbit"); // Set kolom E3 dengan tulisan "ALAMAT"
-		$sheet->setCellValue('E3', "Bentuk"); // Set kolom E3 dengan tulisan "ALAMAT"
-		$sheet->setCellValue('F3', "Subjek"); // Set kolom E3 dengan tulisan "ALAMAT"
+		$rowheader = 3;
+		$sheet->setCellValue('A' . $rowheader, "Code"); // Set kolom A3 dengan tulisan "NO"
+		$sheet->setCellValue('B' . $rowheader, "Barcode"); // Set kolom A3 dengan tulisan "NO"
+		$sheet->setCellValue('C' . $rowheader, "Sekolah"); // Set kolom A3 dengan tulisan "NO"
+		$sheet->setCellValue('D' . $rowheader, "Kelas"); // Set kolom B3 dengan tulisan "NIS"
+		$sheet->setCellValue('E' . $rowheader, "Mapel"); // Set kolom D3 dengan tulisan "JENIS KELAMIN"
+		$sheet->setCellValue('F' . $rowheader, "Perpustakaan"); // Set kolom E3 dengan tulisan "ALAMAT"
+		$sheet->setCellValue('G' . $rowheader, "Rak"); // Set kolom E3 dengan tulisan "ALAMAT"
+		$sheet->setCellValue('H' . $rowheader, "Kategori"); // Set kolom E3 dengan tulisan "ALAMAT"
+		$sheet->setCellValue('I' . $rowheader, "Subjek"); // Set kolom E3 dengan tulisan "ALAMAT"
+		$sheet->setCellValue('J' . $rowheader, "Judul"); // Set kolom E3 dengan tulisan "ALAMAT"
+		$sheet->setCellValue('L' . $rowheader, "Pengarang"); // Set kolom E3 dengan tulisan "ALAMAT"
+		$sheet->setCellValue('M' . $rowheader, "Penerbit"); // Set kolom E3 dengan tulisan "ALAMAT"
+		$sheet->setCellValue('N' . $rowheader, "Tahun"); // Set kolom E3 dengan tulisan "ALAMAT"
+		$sheet->setCellValue('O' . $rowheader, "Kolasi"); // Set kolom E3 dengan tulisan "ALAMAT"
+		$sheet->setCellValue('P' . $rowheader, "ISBN"); // Set kolom E3 dengan tulisan "ALAMAT"
+		$sheet->setCellValue('Q' . $rowheader, "Bentuk"); // Set kolom E3 dengan tulisan "ALAMAT"
+		$sheet->setCellValue('R' . $rowheader, "Cover"); // Set kolom E3 dengan tulisan "ALAMAT"
+		$sheet->setCellValue('S' . $rowheader, "File Url"); // Set kolom E3 dengan tulisan "ALAMAT"
+		$sheet->setCellValue('T' . $rowheader, "Bahasa"); // Set kolom E3 dengan tulisan "ALAMAT"
+		$sheet->setCellValue('U' . $rowheader, "Jumlah"); // Set kolom E3 dengan tulisan "ALAMAT"
+		$sheet->setCellValue('V' . $rowheader, "Jumlah"); // Set kolom E3 dengan tulisan "ALAMAT"
+		$sheet->setCellValue('W' . $rowheader, "Ebook"); // Set kolom E3 dengan tulisan "ALAMAT"
 		// Apply style header yang telah kita buat tadi ke masing-masing kolom header
-		$sheet->getStyle('A3')->applyFromArray($style_col);
-		$sheet->getStyle('B3')->applyFromArray($style_col);
-		$sheet->getStyle('C3')->applyFromArray($style_col);
-		$sheet->getStyle('D3')->applyFromArray($style_col);
-		$sheet->getStyle('E3')->applyFromArray($style_col);
-		$sheet->getStyle('F3')->applyFromArray($style_col);
+		$sheet->getStyle('A' . $rowheader)->applyFromArray($style_col);
+		$sheet->getStyle('B' . $rowheader)->applyFromArray($style_col);
+		$sheet->getStyle('C' . $rowheader)->applyFromArray($style_col);
+		$sheet->getStyle('D' . $rowheader)->applyFromArray($style_col);
+		$sheet->getStyle('E' . $rowheader)->applyFromArray($style_col);
+		$sheet->getStyle('F' . $rowheader)->applyFromArray($style_col);
+		$sheet->getStyle('G' . $rowheader)->applyFromArray($style_col);
+		$sheet->getStyle('H' . $rowheader)->applyFromArray($style_col);
+		$sheet->getStyle('I' . $rowheader)->applyFromArray($style_col);
+		$sheet->getStyle('J' . $rowheader)->applyFromArray($style_col);
+		$sheet->getStyle('K' . $rowheader)->applyFromArray($style_col);
+		$sheet->getStyle('L' . $rowheader)->applyFromArray($style_col);
+		$sheet->getStyle('M' . $rowheader)->applyFromArray($style_col);
+		$sheet->getStyle('N' . $rowheader)->applyFromArray($style_col);
+		$sheet->getStyle('O' . $rowheader)->applyFromArray($style_col);
+		$sheet->getStyle('P' . $rowheader)->applyFromArray($style_col);
+		$sheet->getStyle('Q' . $rowheader)->applyFromArray($style_col);
+		$sheet->getStyle('R' . $rowheader)->applyFromArray($style_col);
+		$sheet->getStyle('S' . $rowheader)->applyFromArray($style_col);
+		$sheet->getStyle('T' . $rowheader)->applyFromArray($style_col);
+		$sheet->getStyle('U' . $rowheader)->applyFromArray($style_col);
+		$sheet->getStyle('V' . $rowheader)->applyFromArray($style_col);
+		$sheet->getStyle('W' . $rowheader)->applyFromArray($style_col);
 
 		$no = 1; // Untuk penomoran tabel, di awal set dengan 1
 		$numrow = 4; // Set baris pertama untuk isi tabel adalah baris ke 4
 		foreach ($data_buku as $item) {
 
-			$sheet->setCellValue('A' . $numrow, $item->title ? $item->title : '');
-			$sheet->setCellValue('B' . $numrow, $item->bentuk ? $item->bentuk : 0);
-			$sheet->setCellValue('C' . $numrow, $item->isbn ? $item->isbn : 0);
-			$sheet->setCellValue('D' . $numrow, $item->publisher ? $item->publisher : '');
-			$sheet->setCellValue('E' . $numrow, $item->bentuk ? $item->bentuk : '');
-			$sheet->setCellValue('F' . $numrow, $item->books_subjectid ? $item->books_subjectid : '');
+			$sheet->setCellValue('A' . $numrow, $item->code ? $item->code : '-');
+			$sheet->setCellValue('B' . $numrow, $item->barcode ? $item->barcode : '-');
+			$sheet->setCellValue('C' . $numrow, $item->school ? $item->school : 0);
+			$sheet->setCellValue('D' . $numrow, $item->class ? $item->class : 0);
+			$sheet->setCellValue('E' . $numrow, $item->mapel ? $item->mapel : '');
+			$sheet->setCellValue('F' . $numrow, $item->library ? $item->library : 0);
+			$sheet->setCellValue('G' . $numrow, $item->rak ? $item->rak : 0);
+			$sheet->setCellValue('H' . $numrow, $item->category ? $item->category : 0);
+			$sheet->setCellValue('I' . $numrow, $item->title ? $item->title : '');
+			$sheet->setCellValue('J' . $numrow, $item->author ? $item->author : '');
+			$sheet->setCellValue('K' . $numrow, $item->publisher ? $item->publisher : '');
+			$sheet->setCellValue('L' . $numrow, $item->books_subjectid ? $item->books_subjectid : '');
+			$sheet->setCellValue('M' . $numrow, $item->books_subjectid ? $item->books_subjectid : '');
+			$sheet->setCellValue('N' . $numrow, $item->books_subjectid ? $item->books_subjectid : '');
+			$sheet->setCellValue('O' . $numrow, $item->books_subjectid ? $item->books_subjectid : '');
+			$sheet->setCellValue('P' . $numrow, $item->books_subjectid ? $item->books_subjectid : '');
+			$sheet->setCellValue('Q' . $numrow, $item->books_subjectid ? $item->books_subjectid : '');
+			$sheet->setCellValue('R' . $numrow, $item->books_subjectid ? $item->books_subjectid : '');
+			$sheet->setCellValue('S' . $numrow, $item->books_subjectid ? $item->books_subjectid : '');
+			$sheet->setCellValue('T' . $numrow, $item->books_subjectid ? $item->books_subjectid : '');
+			$sheet->setCellValue('U' . $numrow, $item->books_subjectid ? $item->books_subjectid : '');
+			$sheet->setCellValue('V' . $numrow, $item->books_subjectid ? $item->books_subjectid : '');
+			$sheet->setCellValue('W' . $numrow, $item->books_subjectid ? $item->books_subjectid : '');
 
 
 			// Apply style row yang telah kita buat tadi ke masing-masing baris (isi tabel)
@@ -1035,5 +1086,72 @@ class Book extends Admin_Controller
 		header('Cache-Control: max-age=0');
 		$writer = new Xlsx($spreadsheet);
 		$writer->save('php://output');
+	}
+
+	public function template_excel_buku()
+	{
+		$data_template = $this->buku->template_excel_master_buku();
+
+		$spreadsheet = new Spreadsheet();
+
+		$sheet = $spreadsheet->getActiveSheet();
+
+
+		$rowheader = 1;
+		$sheet->setCellValue('A' . $rowheader, "Judul");
+		$sheet->setCellValue('B' . $rowheader, "Bentuk");
+		$sheet->setCellValue('D' . $rowheader, "ISBN");
+		$sheet->setCellValue('E' . $rowheader, "Penerbit");
+		$sheet->setCellValue('F' . $rowheader, "Tahun");
+		$sheet->setCellValue('G' . $rowheader, "Kolasi");
+		$sheet->setCellValue('I' . $rowheader, "Call");
+		$sheet->setCellValue('J' . $rowheader, "Bahasa");
+		$sheet->setCellValue('K' . $rowheader, "Tempat");
+		$sheet->setCellValue('L' . $rowheader, "Klasifikasi");
+		$sheet->setCellValue('N' . $rowheader, "Image Cover");
+		$sheet->setCellValue('O' . $rowheader, "Pengarang");
+		$sheet->setCellValue('R' . $rowheader, "Barcode");
+
+
+		$numrow = 2; // Set baris pertama untuk isi tabel adalah baris ke 4
+		foreach ($data_template as $item) {
+
+			$sheet->setCellValue('A' . $numrow, $item->title ? $item->title : '-');
+			$sheet->setCellValue('B' . $numrow, $item->bentuk ? $item->bentuk : '-');
+			$sheet->setCellValue('D' . $numrow, $item->isbn ? $item->isbn : 0);
+			$sheet->setCellValue('E' . $numrow, $item->publisher ? $item->publisher : '');
+			$sheet->setCellValue('F' . $numrow, $item->year ? $item->year : '');
+			$sheet->setCellValue('G' . $numrow, $item->kolasi ? $item->kolasi : 0);
+			$sheet->setCellValue('I' . $numrow, $item->call ? $item->call : 0);
+			$sheet->setCellValue('J' . $numrow, $item->bahasa_name ? $item->bahasa_name : 0);
+			$sheet->setCellValue('K' . $numrow, $item->rak ? $item->rak : '');
+			$sheet->setCellValue('L' . $numrow, $item->klasifikasi ? $item->klasifikasi : '');
+			$sheet->setCellValue('N' . $numrow, $item->cover ? $item->cover : '');
+			$sheet->setCellValue('O' . $numrow, $item->author ? $item->author : '');
+			$sheet->setCellValue('R' . $numrow, $item->barcode ? $item->barcode : '');
+
+			$numrow++; // Tambah 1 setiap kali looping
+		}
+
+		// Set height semua kolom menjadi auto (mengikuti height isi dari kolommnya, jadi otomatis)
+		$sheet->getDefaultRowDimension()->setRowHeight(-1);
+		// Set orientasi kertas jadi LANDSCAPE
+		$sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
+		// Set judul file excel nya
+		$sheet->setTitle("Master Buku");
+		// Proses file excel
+		header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+		header("Content-Disposition: attachment; filename=Template.xlsx"); // Set nama file excel nya
+		header('Cache-Control: max-age=0');
+		$writer = new Xlsx($spreadsheet);
+		$writer->save('php://output');
+	}
+
+	public function import_excel_buku()
+	{
+		if (isset($_FILES["fileExcel"]["name"])) {
+			$path = $_FILES["fileExcel"]["tmp_name"];
+			echo $path;
+		}
 	}
 }

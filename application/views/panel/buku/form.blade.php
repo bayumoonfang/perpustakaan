@@ -104,13 +104,14 @@
                                             @endif
                                         </div>
                                         <div class="form-group">
-                                            <label for="code">Barcode Buku</label>
-                                            <input name="barcode" type="text"
-                                                class="form-control {{ get_error('barcode') ? 'is-invalid' : '' }}"
-                                                id="barcode" placeholder="Barcode Buku"
-                                                value="{{ $edit ? $buku->barcode : old('barcode') }}" autocomplete="off">
-                                            @if (get_error('barcode'))
-                                                <div class="invalid-feedback">{{ get_error('barcode') }}</div>
+                                            <label for="call">Nomor Panggil <small class="text-danger">(Diisi sesuai
+                                                    rentang nomor klasifikasi buku)</small></label>
+                                            <input name="call" type="text"
+                                                class="form-control {{ get_error('call') ? 'is-invalid' : '' }}"
+                                                id="call" placeholder="Nomor Panggil"
+                                                value="{{ $edit ? $buku->call : old('call') }}" autocomplete="off">
+                                            @if (get_error('call'))
+                                                <div class="invalid-feedback">{{ get_error('call') }}</div>
                                             @endif
                                         </div>
                                         <div class="form-group">
@@ -375,18 +376,18 @@
                 var minvalue = parseInt($('.select_subject option:selected').data('minvalue'));
                 var maxvalue = parseInt($('.select_subject option:selected').data('maxvalue'));
                 var lengthvalue = parseInt($('.select_subject option:selected').data('lengthvalue'));
-                var cminvalue = $('#code').attr("data-minvalue", minvalue);
-                var cmaxvalue = $('#code').attr("data-maxvalue", maxvalue);
-                var lcode = $('#code').attr("data-lengthvalue", lengthvalue)
-                var plcode = $('#code').attr("placeholder", 'Kode antara ' + minvalue + ' sampai ' +
+                var cminvalue = $('#call').attr("data-minvalue", minvalue);
+                var cmaxvalue = $('#call').attr("data-maxvalue", maxvalue);
+                var lcall = $('#call').attr("data-lengthvalue", lengthvalue)
+                var plcall = $('#call').attr("placeholder", 'Kode antara ' + minvalue + ' sampai ' +
                     maxvalue);
-                $('#code').val(0);
+                $('#call').val(0);
                 console.log(typeof cmaxvalue + ' ' + cmaxvalue);
             });
-            $('#code').on('click', function() {
+            $('#call').on('click', function() {
                 $(this).val('');
             });
-            $('#code').on('keyup focusout', function() {
+            $('#call').on('keyup focusout', function() {
                 if ($(this).val().length > $(this).data('lengthvalue')) return $(this).val('');
                 if ($(this).val() > $(this).data('maxvalue') || $(this).val() < $(this).data(
                         'minvalue') && $(this).val().length == $(this).data('lengthvalue')) {

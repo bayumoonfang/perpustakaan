@@ -546,9 +546,10 @@ class Issue_model extends App_Model
 
 	public function all_data_pinjam_buku($input)
 	{
-		$lib_id = $input['library'];
-		$start = $input['start'];
-		$end = $input['end'];
+		$lib_id = $input['library_excel'];
+		$start = $input['start_excel'];
+		$end = $input['end_excel'];
+		$status = $input['status_excel'];
 		$curLib = $this->library->current_user_library();
 		$this->db->where($this->column('library'), !empty($lib_id) ? $lib_id : $curLib[0]->id);
 		$rate =  $this->db->get(db_prefix() . 'set_peminjaman')->row();
@@ -557,6 +558,11 @@ class Issue_model extends App_Model
 			$this->db->group_start();
 			$this->db->where($this->column('issue_date') . '<=', $end);
 			$this->db->where($this->column('issue_date') . '>=', $start);
+			$this->db->group_end();
+		}
+		if ($status) {
+			$this->db->group_start();
+			$this->db->where($this->column('status'), $status);
 			$this->db->group_end();
 		}
 		if ($lib_id) {
@@ -627,15 +633,21 @@ class Issue_model extends App_Model
 		$lib_id = $this->input->get('library', true);
 		$start = $this->input->get('start', true);
 		$end = $this->input->get('end', true);
+		$status = $this->input->get('status', true);
 		$curLib = $this->library->current_user_library();
-		echo		$curLib[0]->id . 'lasldas';
+		// print_r($curLib) . 'lasldas';
 		$this->db->where($this->column('library'), !empty($lib_id) ? $lib_id : $curLib[0]->id);
 		$rate =  $this->db->get(db_prefix() . 'set_peminjaman')->row();
-
+		// echo $rate->denda_hari . ' ksksk';
 		if ($start && $end) {
 			$this->db->group_start();
 			$this->db->where($this->column('issue_date') . '<=', $end);
 			$this->db->where($this->column('issue_date') . '>=', $start);
+			$this->db->group_end();
+		}
+		if ($status) {
+			$this->db->group_start();
+			$this->db->where($this->column('status'), $status);
 			$this->db->group_end();
 		}
 		if ($lib_id) {

@@ -145,6 +145,9 @@
                                                         <div class="barcode_button" data-id="{{ $item->id }}"
                                                             data-library={{ $item->library }}
                                                             data-url={{ admin_url() }}></div>
+                                                        <div class="barcode_button" data-id="{{ $item->id }}"
+                                                            data-library={{ $item->library }}
+                                                            data-url={{ admin_url() }}></div>
                                                     @endif
                                                 </td>
 
@@ -195,20 +198,21 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body">
-                    <form action="">
+                <form action="{{ admin_url('buku/import_excel') }}" method="post" enctype="multipart/form-data">
+                    <div class="modal-body">
                         <div class="form-group">
                             <label>Uploud file</label>
-                            <input type="file" class="form-control">
+                            <input type="file" class="form-control" name="fileExcel">
                         </div>
-                    </form>
-                    <p>Download Template importnya <a href="#" target="_blank">disini</a>.</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light waves-effect" data-dismiss="modal">Batal</button>
-                    <button type="button" class="btn btn-primary waves-effect waves-light" data-dismiss="modal"><i
-                            class="uil uil-save mr-2"></i>Import</button>
-                </div>
+                        <p>Download Template importnya <a href="{{ admin_url('buku/template_excel') }}"
+                                target="_blank">disini</a>.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light waves-effect" data-dismiss="modal">Batal</button>
+                        <a type="submit" class="btn btn-primary waves-effect waves-light"><i
+                                class="uil uil-save mr-2"></i>Import</a>
+                    </div>
+                </form>
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
     </div><!-- /.modal -->

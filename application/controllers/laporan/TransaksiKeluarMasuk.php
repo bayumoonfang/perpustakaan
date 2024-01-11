@@ -36,6 +36,8 @@ class TransaksiKeluarMasuk extends Admin_Controller
 		// $data['default_library'] = $this->input->get('library', true);
 		$curLib = $this->library->current_user_library();
 		$data['default_library'] = $curLib[0]->id;
+		$data['default_jenis'] = $this->input->get('jenis', true);
+		$data['default_kategori'] = $this->input->get('kategori', true);
 		$data['default_start'] = $this->input->get('start', true);
 		$data['default_end'] = $this->input->get('end', true);
 		return view('laporan.buku_masuk_keluar', $data);

@@ -16,9 +16,11 @@ class Pengunjung extends Admin_Controller
 	public function index()
 	{
 		user_access(['laporan library']);
+		$curLib = $this->library->current_user_library();
 		$lib_id = $this->input->get('library', true);
 		$cetak = $this->input->get('cetak', true);
-		$library = $this->library->get_data_perpus($lib_id);
+		// $library = $this->library->get_data_perpus($lib_id);
+		$library = $curLib[0]->id;
 		if ($lib_id && !$library) {
 			show_404();
 		}
@@ -36,11 +38,11 @@ class Pengunjung extends Admin_Controller
 		$data['pengunjung'] = $this->pengunjung->data($config['per_page'], $from);
 		$data['per_pengunjung'] = $this->pengunjung->count_data($config['per_page'], $from);
 		$data['page'] = $this->pagination->create_links();
-		$curLib = $this->library->current_user_library();
 		$data['default_library'] = $curLib[0]->id;
-		$data['default_jenis_laporan'] = $this->input->get('jenis_laporan', true);
+		$data['default_jenis_laporan'] = $this->input->get('jenis', true);
 		$data['default_start'] = $this->input->get('start', true);
 		$data['default_end'] = $this->input->get('end', true);
+		$data['default_status'] = $this->input->get('status', true);
 		$libs = $this->library->data(10000);
 		foreach ($libs as $key => $item) {
 			$libs[$key]->enc = $this->encryption->encrypt($item->id);
@@ -55,6 +57,9 @@ class Pengunjung extends Admin_Controller
 		user_access(['laporan library']);
 		$data_pengunjung = $this->pengunjung->all_data($lib_id);
 
+
+		// var_dump($data_pengunjung);
+		// exit();
 		$spreadsheet = new Spreadsheet();
 		$sheet = $spreadsheet->getActiveSheet();
 
@@ -84,7 +89,7 @@ class Pengunjung extends Admin_Controller
 				'left' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN] // Set border left dengan garis tipis
 			]
 		];
-		$sheet->setCellValue('A1', "Data Pengunjung " . $libs->library); // Set kolom A1 dengan tulisan "DATA SISWA"
+		$sheet->setCellValue('A1', "Data Pengunjung " . $libs); // Set kolom A1 dengan tulisan "DATA SISWA"
 		$sheet->mergeCells('A1:E1'); // Set Merge Cell pada kolom A1 sampai E1
 		$sheet->getStyle('A1')->getFont()->setBold(true); // Set bold kolom A1
 		// Buat header tabel nya pada baris ke 3
@@ -153,7 +158,7 @@ class Pengunjung extends Admin_Controller
 		$sheet->setTitle("Data Pengunjung");
 		// Proses file excel
 		header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-		header("Content-Disposition: attachment; filename=Data Pengunjung " . $libs->library . ".xlsx"); // Set nama file excel nya
+		header("Content-Disposition: attachment; filename=Data Pengunjung " . $libs . ".xlsx"); // Set nama file excel nya
 		header('Cache-Control: max-age=0');
 		$writer = new Xlsx($spreadsheet);
 		$writer->save('php://output');

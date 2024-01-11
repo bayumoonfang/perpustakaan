@@ -54,11 +54,21 @@ class Pengunjung_model extends App_Model
 		$lib_id = $this->input->get('library', true);
 		$start = $this->input->get('start', true);
 		$end = $this->input->get('end', true);
+		$status = $this->input->get('status', true);
 
 		if ($start && $end) {
 			$this->db->group_start();
 			$this->db->where($this->column('date') . '<=', $end);
 			$this->db->where($this->column('date') . '>=', $start);
+			$this->db->group_end();
+		}
+		if ($status) {
+			$this->db->group_start();
+			if ($status == '1') {
+				$this->db->where($this->column('is_guest'), $status);
+			} else {
+				$this->db->where($this->column('status'), $status);
+			}
 			$this->db->group_end();
 		}
 		if ($lib_id) {
@@ -118,8 +128,10 @@ class Pengunjung_model extends App_Model
 
 	public function all_data($lib_id)
 	{
-		$start = $this->input->get('start', true);
-		$end = $this->input->get('end', true);
+		$start = $this->input->get('start_excel', true);
+		$end = $this->input->get('end_excel', true);
+		$status = $this->input->get('status_excel', true);
+		$lib = $this->input->get('library_excel', true);
 
 		if ($start && $end) {
 			$this->db->group_start();
@@ -127,7 +139,16 @@ class Pengunjung_model extends App_Model
 			$this->db->where($this->column('date') . '>=', $start);
 			$this->db->group_end();
 		}
-		$this->db->where($this->column('library'), $lib_id);
+		if ($status) {
+			$this->db->group_start();
+			if ($status == '1') {
+				$this->db->where($this->column('is_guest'), $status);
+			} else {
+				$this->db->where($this->column('status'), $status);
+			}
+			$this->db->group_end();
+		}
+		$this->db->where($this->column('library'), $lib);
 		$this->db->where($this->column('deleted_at'), null);
 		$this->db->order_by($this->column('date'), 'desc');
 		$data = $this->db->get($this->table)->result();
