@@ -59,6 +59,7 @@ const BarcodeButton = (props) => {
 			body: JSON.stringify({
 				book: id,
 				library: library,
+				url: url,
 			}),
 		});
 		const dataGenerate = await response.json();
@@ -126,7 +127,7 @@ const BarcodeButton = (props) => {
 		let arrList = [];
 		listBarcode.filter((item) => {
 			if (item.selected) {
-				arrList.push(item?.barcode);
+				arrList.push(item?.url);
 			}
 		});
 		const barcode = JSON.stringify(arrList);

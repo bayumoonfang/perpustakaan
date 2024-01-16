@@ -14,6 +14,7 @@ class Buku_model extends App_Model
 		$this->table = db_prefix() . 'books';
 		$this->table_issue = db_prefix() . 'issues';
 		$this->table_barcode = db_prefix() . 'barcodes';
+		$this->table_callnumber = db_prefix() . 'book_callnumber';
 		$this->table_prefix = '';
 		$this->db = $this->load->database('default', true);
 	}
@@ -136,11 +137,12 @@ class Buku_model extends App_Model
 		return $exists;
 	}
 
-	public function add()
+	public function add($sekolah)
 	{
 		$input = $this->input->post(NULL, TRUE);
 		$data = [
 			'code' => $input['code'],
+			'school' => $sekolah,
 			'class' => $input['class'],
 			'mapel' => $input['mapel'],
 			'library' => $input['library'],
@@ -1121,6 +1123,7 @@ class Buku_model extends App_Model
 		$this->db->where($this->column('library'), $input['library']);
 		$this->db->where($this->column('book'), $input['book']);
 		$book_barcodes = $this->db->get($this->table_barcode)->num_rows();
+		$book_fileurl = $this->db->get($this->table)->row();
 		$no = $book_barcodes + 1;
 		$qty = $qtys > $book_barcodes ? $qtys - $book_barcodes : 0;
 		for ($i = 0; $i < $qty; $i++) {
@@ -1129,12 +1132,56 @@ class Buku_model extends App_Model
 				'library' => $input['library'],
 				'book' => $input['book'],
 				'barcode' => $barcode,
+				'url' => $book_fileurl->fileurl,
 				'created_at' => now(),
 				'created_by' => current_user(),
 				'updated_at' => now(),
 				'updated_by' => current_user(),
 			];
 			$this->db->insert($this->table_barcode, $data);
+			$no++;
+		}
+		return true;
+	}
+
+	public function get_data_book_nomorpunggung_list($id, $library)
+	{
+		$this->db->where($this->column('book'), $id);
+		$this->db->where($this->column('library'), $library);
+		$data = $this->db->get($this->table_callnumber)->result();
+		foreach ($data as $key => $item) {
+			$data[$key]->selected = false;
+		}
+		return $data;
+	}
+
+
+	public function generate_book_nomorpunggung($input)
+	{
+		$this->db->where($this->column('id'), $input['book']);
+		$books = $this->db->get($this->table)->row();
+		if (empty($books)) {
+			return false;
+		}
+		$qtys = $books->qty ?? 0;
+		$this->db->where($this->column('library'), $input['library']);
+		$this->db->where($this->column('book'), $input['book']);
+		$book_callnumbers = $this->db->get($this->table_callnumber)->num_rows();
+		$no = $book_callnumbers + 1;
+		$qty = $qtys > $book_callnumbers ? $qtys - $book_callnumbers : 0;
+		for ($i = 0; $i < $qty; $i++) {
+			$callnumber = "Copy ke-" . sprintf("%03s", $no);
+			$data = [
+				'library' => $input['library'],
+				'book' => $input['book'],
+				'callnumber' => $callnumber,
+				'created_at' => now(),
+				'created_by' => current_user(),
+				'updated_at' => now(),
+				'updated_by' => current_user(),
+			];
+
+			$this->db->insert($this->table_callnumber, $data);
 			$no++;
 		}
 		return true;
@@ -1265,9 +1312,22 @@ class Buku_model extends App_Model
 		return $data;
 	}
 
+	public function add_batch($data)
+	{
+		return $this->db->insert_batch($this->table, $data);
+	}
+
 	public function header_excel_buku()
 	{
 		$get = $this->db->get($this->table)->result_array();
 		return $get;
+	}
+
+	public function get_url_book($list)
+	{
+		$this->db->where_in($this->column('barcode'), $list);
+		$get_list = $this->db->get($this->table_barcode)->result();
+
+		return $get_list;
 	}
 }
