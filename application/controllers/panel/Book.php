@@ -133,7 +133,7 @@ class Book extends Admin_Controller
 			}
 		}
 
-		$buku = $this->buku->add();
+		$buku = $this->buku->add($user_sekolah);
 		if (!empty($_FILES['cover']['name'])) {
 			if (!$upload_cover['error']) {
 				$this->buku->update_cover($buku, $upload_cover['data']);
@@ -489,6 +489,27 @@ class Book extends Admin_Controller
 		$res['data'] = $book;
 		echo json_encode($res);
 	}
+
+	public function book_nomorpunggung($id, $library)
+	{
+		$res['status'] = true;
+		$res['message'] = 'List Nomor Punggung Buku ditemukan';
+		$book = $this->buku->get_data_book_nomorpunggung_list($id, $library);
+		$res['data'] = $book;
+		echo json_encode($res);
+	}
+
+	public function book_nomorpunggung_generate()
+	{
+		$input = $this->input->post(NULL, TRUE);
+		$res['status'] = 'Berhasil';
+		$res['icon'] = 'success';
+		$res['message'] = 'List Nomor Punggung Buku ditemukan';
+		$book = $this->buku->generate_book_nomorpunggung($input);
+
+		$res['data'] = $book;
+		echo json_encode($res);
+	}
 	public function image($value)
 	{
 		$this->load->library('BarcodeQR');
@@ -513,7 +534,14 @@ class Book extends Admin_Controller
 			show_404();
 			die;
 		}
-
+		$list_url = $this->buku->get_url_book($list_barcode);
+		$arr_url = array();
+		foreach ($list_url as $item) {
+			// print_r($item->url);
+			$arr_url[] = $item->url;
+		}
+		// var_dump($arr_url);
+		// exit();
 		$this->load->library('Pdf');
 		$pdf = new FPDF('P', 'cm', 'A4');
 		$pdf->AddPage();
@@ -523,10 +551,10 @@ class Book extends Admin_Controller
 		$counterPage = 1;
 		$arrKey = array();
 		$pdf->SetAutoPageBreak(false);
-		foreach ($list_barcode as $keys => $value) {
+		foreach ($arr_url as $keys => $value) {
 			$new_line = 0;
 			array_push($arrKey, $value);
-			if ($counter % 4 == 0 || $keys === array_key_last($list_barcode)) {
+			if ($counter % 4 == 0 || $keys === array_key_last($arr_url)) {
 				$new_line = 1;
 			}
 			$pdf->Cell($qrcode_width, $qrcode_width, $pdf->Image($this->image($value), $pdf->GetX(), $pdf->GetY(), $qrcode_width, $qrcode_width, 'png'), 1, $new_line);
@@ -536,7 +564,7 @@ class Book extends Admin_Controller
 					if ($key === array_key_last($arrKey)) {
 						$nl = 1;
 					}
-					$pdf->Cell($qrcode_width, 0.75, $item, 1, $nl, 'C');
+					// $pdf->Cell($qrcode_width, 0.75, $item, 1, $nl, 'C');
 				}
 			}
 			if ($counterPage % 20 == 0) {
@@ -550,6 +578,181 @@ class Book extends Admin_Controller
 		}
 
 		$pdf->Output();
+	}
+	// public function book_nomorpunggung_print()
+	// {
+	// 	$nopung = $this->input->get('nomorpunggung', true);
+	// 	$idBook = $this->input->get('idbuku', true);
+	// 	$idLib = $this->input->get('idlibrary', true);
+	// 	$book = json_decode(json_encode($this->buku->get_data($idBook)), true);
+	// 	$list_nomorpunggung = json_decode($nopung, true);
+	// 	// var_dump($book);
+	// 	// var_dump($list_nomorpunggung);
+	// 	// exit();
+	// 	if (!$list_nomorpunggung || !$nopung) {
+	// 		show_404();
+	// 		die;
+	// 	}
+	// 	// $list_url = $this->buku->get_url_book($list_nomorpunggung);
+	// 	$arr_url = array();
+	// 	foreach ($list_nomorpunggung as $key => $item) {
+	// 		// print_r($item->url);
+	// 		$arr_url[$key]['isi'] = $book['title'] . "\n";
+	// 		$arr_url[$key]['isi'] .= $book['call'] . "\n";
+	// 		$arr_url[$key]['isi'] .= substr($book['author'], 0, 3) . "\n";
+	// 		$arr_url[$key]['isi'] .= substr($book['title'], 0, 1) . "\n";
+	// 		$arr_url[$key]['isi'] .= "\n" . $item;
+	// 		// $arr_url[$key]['ket'] = $item;
+	// 		// $arr_url[$key]['judul'] = $book['title'];
+	// 	}
+	// 	// var_dump($arr_url);
+	// 	// exit();
+	// 	$this->load->library('Pdf');
+	// 	$pdf = new FPDF('P', 'cm', 'A4');
+	// 	$pdf->AddPage();
+	// 	$pdf->SetFont('Arial', '', 12);
+	// 	$qrcode_width = ($pdf->GetPageWidth() - 2) / 4;
+	// 	$counter = 1;
+	// 	$counterPage = 1;
+	// 	$arrKey = array();
+	// 	$pdf->SetAutoPageBreak(false);
+	// 	foreach ($arr_url as $keys => $value) {
+	// 		$new_line = 0;
+	// 		array_push($arrKey, $value);
+	// 		if ($counter % 4 == 0 || $keys === array_key_last($arr_url)) {
+	// 			$new_line = 1;
+	// 		}
+	// 		// $value['isi'] = str_replace("\n", "<br>", $value['isi']);
+	// 		// echo $value['isi'];
+	// 		$pdf->Cell($qrcode_width, $qrcode_width, $value['isi'], 1, $new_line);
+
+	// 		if ($new_line == 1) {
+	// 			foreach ($arrKey as $key => $item) {
+	// 				$nl = 0;
+	// 				if ($key === array_key_last($arrKey)) {
+	// 					$nl = 1;
+	// 				}
+	// 				// $pdf->Cell($qrcode_width, 0.75, $item['ket'], 1, $nl, 'C');
+	// 			}
+	// 		}
+	// 		if ($counterPage % 20 == 0) {
+	// 			$pdf->AddPage();
+	// 		}
+	// 		if ($new_line == 1) {
+	// 			$arrKey = array();
+	// 		}
+	// 		$counter++;
+	// 		$counterPage++;
+	// 	}
+
+	// 	$pdf->Output();
+	// }
+
+	function GenerateWord()
+	{
+		// Get a random word
+		$nb = rand(3, 10);
+		$w = '';
+		for ($i = 1; $i <= $nb; $i++)
+			$w .= chr(rand(ord('a'), ord('z')));
+		return $w;
+	}
+
+	function GenerateSentence()
+	{
+		// Get a random sentence
+		$nb = rand(1, 10);
+		$s = '';
+		for ($i = 1; $i <= $nb; $i++)
+			$s .= $this->GenerateWord() . ' ';
+		return substr($s, 0, -1);
+	}
+
+	public function book_nomorpunggung_print()
+	{
+		$nopung = $this->input->get('nomorpunggung', true);
+		$idBook = $this->input->get('idbuku', true);
+		$idLib = $this->input->get('idlibrary', true);
+		$book = json_decode(json_encode($this->buku->get_data($idBook)), true);
+		$list_nomorpunggung = json_decode($nopung, true);
+		// var_dump($book);
+		// var_dump($list_nomorpunggung);
+		// exit();
+		if (!$list_nomorpunggung || !$nopung) {
+			show_404();
+			die;
+		}
+		// $list_url = $this->buku->get_url_book($list_nomorpunggung);
+		$arr_url = array();
+		// foreach ($list_nomorpunggung as  $item) {
+		// 	// print_r($item->url);
+		// 	$arr_url['isi'] = "<ul> <li><strong>" . $book['title'] . "</strong></li> <li>";
+		// 	$arr_url['isi'] .= $book['call'] . "</li>";
+		// 	$arr_url['isi'] .= "<li>" . substr($book['author'], 0, 3) . "</li>";
+		// 	$arr_url['isi'] .= "<li>" . substr($book['title'], 0, 1) . "</li>";
+		// 	$arr_url['isi'] .= "<li>" . $item . "</li></ul>";
+		// 	// $arr_url[$key]['ket'] = $item;
+		// 	// $arr_url[$key]['judul'] = $book['title'];
+		// }
+		foreach ($list_nomorpunggung as $key => $item) {
+			// print_r($item->url);
+			$arr_url[$key]['judul'] =  $book['title'];
+			$arr_url[$key]['nomor'] = $book['call'];
+			$arr_url[$key]['penerbit'] = substr($book['author'], 0, 3);
+			$arr_url[$key]['inisial'] = substr($book['title'], 0, 1);
+			$arr_url[$key]['keterangan'] = $item;
+			// $arr_url[$key]['ket'] = $item;
+			// $arr_url[$key]['judul'] = $book['title'];
+		}
+		$data['arr_url'] = $arr_url;
+		// var_dump($data);
+		return view('panel.buku.print', $data);
+		// var_dump(count($arr_url));
+		// $arraarra = array($this->GenerateSentence());
+		// var_dump($arraarra);
+		// exit();
+		// $this->load->library('Pdf');
+		// $pdf = new FPDF('P', 'cm', 'A4');
+		// $pdf->AddPage();
+		// $pdf->SetFont('Arial', '', 12);
+		// $qrcode_width = ($pdf->GetPageWidth() - 2) / 4;
+		// $counter = 1;
+		// $counterPage = 1;
+		// $arrKey = array();
+		// // $pdf->SetAutoPageBreak(false);
+		// // $pdf->SetWidths(array(45, 45, 45, 45));
+		// foreach ($arr_url as $value) {
+		// 	$pdf->WriteHTML($value['isi']);
+
+		// $pdf->MultiCell($qrcode_width, 2, $value['isi'], 'LRT', 'L', 0);
+		// $new_line = 0;
+		// array_push($arrKey, $value);
+		// if ($counter % 4 == 0 || $keys === array_key_last($arr_url)) {
+		// 	$new_line = 1;
+		// }
+		// // $value['isi'] = str_replace("\n", "<br>", $value['isi']);
+		// // echo $value['isi'];
+
+		// if ($new_line == 1) {
+		// 	foreach ($arrKey as $key => $item) {
+		// 		$nl = 0;
+		// 		if ($key === array_key_last($arrKey)) {
+		// 			$nl = 1;
+		// 		}
+		// 		// $pdf->Cell($qrcode_width, 0.75, $item['ket'], 1, $nl, 'C');
+		// 	}
+		// }
+		// if ($counterPage % 20 == 0) {
+		// 	$pdf->AddPage();
+		// }
+		// if ($new_line == 1) {
+		// 	$arrKey = array();
+		// }
+		// $counter++;
+		// $counterPage++;
+		// }
+
+		// $pdf->Output();
 	}
 
 	//Controller Bentuk Pustaka
@@ -1149,9 +1352,86 @@ class Book extends Admin_Controller
 
 	public function import_excel_buku()
 	{
-		if (isset($_FILES["fileExcel"]["name"])) {
-			$path = $_FILES["fileExcel"]["tmp_name"];
-			echo $path;
+		$path = '../';
+		$json 		= [];
+		$this->upload_config($path);
+		if (!$this->upload->do_upload('fileExcel')) {
+			$json = [
+				'icon' => 'error',
+				'status' => 'Gagal',
+				'message' => $this->upload->display_errors(),
+			];
+		} else {
+			$file_data 	= $this->upload->data();
+			$file_name 	= $path . $file_data['file_name'];
+			$arr_file 	= explode('.', $file_name);
+			$extension 	= end($arr_file);
+			if ('csv' == $extension) {
+				$reader 	= new \PhpOffice\PhpSpreadsheet\Reader\Csv();
+			} else {
+				$reader 	= new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+			}
+			$spreadsheet 	= $reader->load($file_name);
+			$sheet_data 	= $spreadsheet->getActiveSheet()->toArray();
+			$list 			= [];
+			foreach ($sheet_data as $key => $val) {
+				$curLib = $this->library->current_user_library();
+				if ($key < 1) continue;
+				$list[] = [
+					'title'					=> $val[0],
+					'bentuk'			=> $val[1],
+					'isbn'				=> $val[3],
+					'publisher'					=> $val[4],
+					'year'					=> $val[5],
+					'kolasi'			=> $val[6],
+					'call' 			=> $val[8],
+					'language'				=> $val[9],
+					'class'				=> $val[10],
+					'klasifikasi'				=> $val[11],
+					'cover'				=> $val[13],
+					'author'				=> $val[14],
+					'barcode'				=> $val[17],
+					'library'	=> $curLib[0]->id,
+					'is_physical_book'	=> '1',
+				];
+			}
+			if (file_exists($file_name))
+				unlink($file_name);
+			if (count($list) > 0) {
+				$result 	= $this->buku->add_batch($list);
+				if ($result) {
+					$json = [
+						'icon' => 'success',
+						'status' => 'Berhasil',
+						'message' 	=> "All Entries are imported successfully.",
+					];
+				} else {
+					$json = [
+						'icon' => 'error',
+						'status' => 'Gagal',
+						'message' 	=> "Something went wrong. Please try again."
+					];
+				}
+			} else {
+				$json = [
+					'icon' => 'error',
+					'status' => 'Gagal',
+					'message' => "No new record is found.",
+				];
+			}
 		}
+		echo json_encode($json);
+	}
+
+	public function upload_config($path)
+	{
+		if (!is_dir($path))
+			mkdir($path, 0777, TRUE);
+		$config['upload_path'] 		= './' . $path;
+		$config['allowed_types'] 	= 'csv|CSV|xlsx|XLSX|xls|XLS';
+		$config['max_filename']	 	= '255';
+		$config['encrypt_name'] 	= TRUE;
+		$config['max_size'] 		= 4096;
+		$this->load->library('upload', $config);
 	}
 }
