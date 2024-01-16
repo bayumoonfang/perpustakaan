@@ -92,7 +92,8 @@
                             </div>
                             {{ show_status() }}
                             <div class="table-responsive">
-                                <table class="table table-striped table-hover table-bordered dt-responsive nowrap"
+                                <table id="tableCetakNomorPunggung"
+                                    class="table table-striped table-hover table-bordered dt-responsive nowrap"
                                     style="border-collapse: collapse; border-spacing: 0; width: 100%;">
                                     <thead>
                                         <tr>
@@ -101,7 +102,7 @@
                                             <th width="10%">Harga</th>
                                             <th width="10%">Jumlah</th>
                                             <th width="10%">Status</th>
-                                            <th width="10%">Barcode</th>
+                                            <th>Barcode</th>
                                             @if (user_can(['edit buku', 'delete buku']))
                                                 <th width="100px">Action</th>
                                             @endif
@@ -145,9 +146,18 @@
                                                         <div class="barcode_button" data-id="{{ $item->id }}"
                                                             data-library={{ $item->library }}
                                                             data-url={{ admin_url() }}></div>
-                                                        <div class="barcode_button" data-id="{{ $item->id }}"
+                                                        {{-- <div class="barcode_button" data-id="{{ $item->id }}"
                                                             data-library={{ $item->library }}
-                                                            data-url={{ admin_url() }}></div>
+                                                            data-url={{ admin_url() }}>Nomor Punggung</div> --}}
+                                                        <button data-toggle="modal" id="btnCetakNomorPunggung"
+                                                            data-target="#cetakNomorPunggungModal"
+                                                            data-id="{{ $item->id }}"
+                                                            data-library="{{ $item->library }}"
+                                                            data-title="{{ $item->title }}"
+                                                            data-author="{{ $item->author }}"
+                                                            data-call="{{ $item->call }}"
+                                                            class="btn btn-sm btn-outline-warning cetak-nomor-punggung">Nomor
+                                                            Punggung</button>
                                                     @endif
                                                 </td>
 
@@ -188,8 +198,8 @@
         </div> <!-- container-fluid -->
     </div>
 
-    <div class="modal fade import-data" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel"
-        aria-hidden="true">
+    <div class="modal fade import-data" id="uploadBukuModal" tabindex="-1" role="dialog"
+        aria-labelledby="mySmallModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -198,7 +208,7 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <form action="{{ admin_url('buku/import_excel') }}" method="post" enctype="multipart/form-data">
+                <form id="uploadBukuForm" method="post" autocomplete="off">
                     <div class="modal-body">
                         <div class="form-group">
                             <label>Uploud file</label>
@@ -209,8 +219,8 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-light waves-effect" data-dismiss="modal">Batal</button>
-                        <a type="submit" class="btn btn-primary waves-effect waves-light"><i
-                                class="uil uil-save mr-2"></i>Import</a>
+                        <button type="button" class="btn btn-primary waves-effect waves-light button-submit"><i
+                                class="uil uil-save mr-2"></i>Import</button>
                     </div>
                 </form>
             </div><!-- /.modal-content -->
@@ -289,6 +299,149 @@
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
     </div><!-- /.modal -->
+
+    <div class="modal fade cetak-nomor-punggung" id="cetakNomorPunggungModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title mt-0">Nomor Punggung Buku</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p class="font-weight-bold titleBook">The Captain: A Magazine for Boyz & "Old Boys"</p>
+                    <p class="idBook" hidden></p>
+                    <p class="libraryBook" hidden></p>
+                    <p>Pengarang :
+                        <span class="authorBook"></span>
+                    </p>
+                    <p>Nomor Panggil :
+
+                        <span class="callBook"></span>
+                    </p>
+                    <form id="btnRegenerateNomorPunggungBuku">
+                        <button type="submit" class="btn btn-sm btn-outline-success">Regenerate Nomor Punggung
+                            Buku</button>
+                    </form>
+                    <p class="text-warning"><em>**Regenerate Barcode hanya akan menambah jumlah barcode sesuai Qty buku
+                            (jika kurang) dan tidak akan menghapus atau mengurangi barcode yang telah dibuat sebelumnya.
+                            **Perubahan Kode buku master tidak akan merubah barcode yang telah digenerate sebelumnya.</em>
+                    </p>
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group position-relative">
+                                <input type="checkbox" class="mr-2" value="1" id="checkboxAll"><span>Pilh
+                                    Semua</span>
+                                {{-- <button id="selectAll" class="btn btn-sm btn-outline-info mb-3">Pilih Semua</button>
+                                <button id="cancelSelectAll" class="btn btn-sm btn-outline-danger mb-3" 
+                                 style="display: none;">Batal Pilih Semua</button> --}}
+                                <button id="printOut" class="btn btn-sm btn-outline-warning" hidden>Cetak</button>
+                                <table id="tableNomorPunggungBuku"
+                                    class="table table-striped table-hover table-bordered dt-responsive nowrap"
+                                    style="border-collapse: collapse; border-spacing: 0; width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th width="5%">
+                                                #
+                                            </th>
+
+                                            <th>Copy ke</th>
+                                        </tr>
+                                    </thead>
+                                    {{-- <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value=""
+                                                        id="defaultCheck1" checked="">
+                                                    <label class="form-check-label" for="defaultCheck1"></label>
+                                                </div>
+                                            </td>
+                                            <td>1</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value=""
+                                                        id="defaultCheck1" checked="">
+                                                    <label class="form-check-label" for="defaultCheck1"></label>
+                                                </div>
+                                            </td>
+                                            <td>2</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value=""
+                                                        id="defaultCheck1" checked="">
+                                                    <label class="form-check-label" for="defaultCheck1"></label>
+                                                </div>
+                                            </td>
+                                            <td>3</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value=""
+                                                        id="defaultCheck1" checked="">
+                                                    <label class="form-check-label" for="defaultCheck1"></label>
+                                                </div>
+                                            </td>
+                                            <td>4</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value=""
+                                                        id="defaultCheck1" checked="">
+                                                    <label class="form-check-label" for="defaultCheck1"></label>
+                                                </div>
+                                            </td>
+                                            <td>5</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value=""
+                                                        id="defaultCheck1" checked="">
+                                                    <label class="form-check-label" for="defaultCheck1"></label>
+                                                </div>
+                                            </td>
+                                            <td>6</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value=""
+                                                        id="defaultCheck1" checked="">
+                                                    <label class="form-check-label" for="defaultCheck1"></label>
+                                                </div>
+                                            </td>
+                                            <td>7</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value=""
+                                                        id="defaultCheck1" checked="">
+                                                    <label class="form-check-label" for="defaultCheck1"></label>
+                                                </div>
+                                            </td>
+                                            <td>8</td>
+                                        </tr>
+                                    </tbody> --}}
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
     <!-- End Page-content -->
 @endsection
 @section('scripts')
@@ -298,6 +451,148 @@
     <script>
         $(document).ready(function() {
             $('.select2-multiple').select2();
+            $('#tableCetakNomorPunggung').on('click', 'td>button#btnCetakNomorPunggung', function(e) {
+                e.preventDefault();
+                $('#checkboxAll').prop('checked', false);
+                let id = $(this).data("id");
+                let library = $(this).data("library");
+                let author = $(this).data("author");
+                let title = $(this).data("title");
+                let call = $(this).data("call");
+                $('.idBook').html(id);
+                $('.libraryBook').html(library);
+                $('.authorBook').html(author);
+                $('.titleBook').html(title);
+                $('.callBook').html(call);
+                $('#tableNomorPunggungBuku').DataTable().destroy();
+                var url = "{{ admin_url('buku-nomorpunggung/:id/library/:library') }}";
+                var table = $('#tableNomorPunggungBuku').DataTable({
+                    ajax: {
+                        type: "GET",
+                        url: url.replace(":id", id).replace(":library", library),
+                    },
+                    responsive: true,
+                    processing: true,
+                    serverSide: true,
+                    paging: false,
+                    searching: false,
+                    bInfo: false,
+                    scrollY: 280,
+                    columns: [{
+                            data: 'id',
+                            render: function(data, type, full) {
+
+                                return '<input id="checkboxId" value="' + full.callnumber +
+                                    '"  type="checkbox">';
+                            },
+                        },
+                        {
+                            data: 'callnumber'
+                        }
+                    ],
+                });
+            });
+
+            $('#checkboxAll').on('click', function() {
+                $('#tableNomorPunggungBuku tbody input[type="checkbox"][id="checkboxId"]').prop(
+                    'checked', this.checked);
+
+                $('#printOut').prop('hidden', !this.checked);
+            });
+
+            $('#tableNomorPunggungBuku tbody tr').on('click', 'td input#checkboxId', function() {
+                var checked = $(this).prop('checked');
+
+                console.log('asjsjdja');
+            });
+
+            $("body").change("#checkboxId", function() {
+                if ($("#checkboxId").prop('checked')) {
+                    // Do Stuff
+                    console.log($(this).val());
+                } else {
+                    // Do Stuff
+                }
+            });
+            $('#printOut').click(function() {
+                var book = $('.idBook').html();
+                var library = $('.libraryBook').html();
+                var cetak = [];
+                var value = [];
+                for (i = 0; i < $('#tableNomorPunggungBuku').DataTable().data().count(); i++) {
+                    if ($('#checkboxId').is(':checked'))
+                        cetak.push($('#checkboxId').val());
+                }
+                $($('#tableNomorPunggungBuku').DataTable().$('input[id="checkboxId"]:checked').each(
+                    function() {
+
+                        value.push($(this).val());
+
+                    }));
+                console.log(cetak);
+                console.log(value);
+                n = JSON.stringify(value);
+                window.open("{{ admin_url('buku-nomorpunggung-print') }}" + "?nomorpunggung=" + n +
+                    "&idbuku=" + book + "&idlibrary=" + library,
+                    "_blank");
+            })
+        });
+
+
+
+
+
+        $('#btnRegenerateNomorPunggungBuku').click(function(e) {
+            e.preventDefault();
+            var book = $('.idBook').html();
+            var library = $('.libraryBook').html();
+            $.ajax({
+                type: "POST",
+                url: "{{ admin_url('buku-nomorpunggung-generate') }}",
+                data: {
+                    book: book,
+                    library: library
+                },
+                dataType: 'json',
+
+                success: function(res) {
+                    console.log(res);
+                    Swal.fire({
+                        icon: res.icon,
+                        title: 'Proses ' + res.status + '!',
+                        text: res.message,
+                        timer: 1000
+                    });
+                    $('#cetakNomorPunggungModal').modal("toggle");
+                }
+            })
+        });
+
+        $('.button-submit').click(function(e) {
+            e.preventDefault();
+            var data = new FormData($('#uploadBukuForm')[0]);
+            $.ajax({
+                type: "POST",
+                url: "{{ admin_url('buku/import_excel') }}",
+                data: data,
+                dataType: 'json',
+                contentType: false,
+                cache: false,
+                processData: false,
+                success: function(res) {
+                    console.log(res);
+                    Swal.fire({
+                        icon: res.icon,
+                        title: 'Proses ' + res.status + '!',
+                        text: res.message,
+                        timer: 1000
+                    });
+                    $('#uploadBukuForm')[0].reset();
+                    $('#uploadBukuModal').modal("toggle");
+                    window.location.href = "{{ admin_url('buku') }}";
+                    // alert('Success');
+                }
+            })
         });
         $('.button-delete').on('click', function(e) {
             var $this = $(this);
@@ -320,7 +615,6 @@
                         }
                     },
                 },
-
             });
         });
     </script>
